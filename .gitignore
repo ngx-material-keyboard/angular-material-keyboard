@@ -33,6 +33,7 @@ node_modules
 
 # IntelliJ project files
 .idea
+.idea/workspace.xml
 *.iml
 out
 gen
