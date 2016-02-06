@@ -1,0 +1,48 @@
+{
+  "author": {
+    "email": "postdavidenke.dem",
+    "name": "David Enke"
+  },
+  "dependencies": {},
+  "description": "An AngularJs Virtual Keyboard Interface based on GreyWyvern VKI",
+  "devDependencies": {
+    "conventional-changelog": "0.0.16",
+    "gulp": "^3.8.11",
+    "gulp-concat": "^2.5.2",
+    "gulp-footer": "^1.0.5",
+    "gulp-header": "^1.2.2",
+    "gulp-jshint": "^1.9.2",
+    "gulp-load-plugins": "^0.8.0",
+    "gulp-uglify": "^1.1.0",
+    "jshint-stylish": "^1.0.0"
+  },
+  "directories": {},
+  "homepage": "https://github.com/davidenke/angular-material-keyboard",
+  "keywords": [
+    "Angular",
+    "Material",
+    "Angular Material Design",
+    "Onscreen",
+    "Keyboard",
+    "VKI",
+    "Virtual"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "email": "postdavidenke.dem",
+      "name": "David Enke"
+    }
+  ],
+  "name": "angular-material-keyboard",
+  "optionalDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidenke/angular-material-keyboard.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.0.1"
+}
