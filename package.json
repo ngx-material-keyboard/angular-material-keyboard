@@ -4,7 +4,7 @@
     "name": "David Enke"
   },
   "dependencies": {},
-  "description": "Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/) and the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard) based on GreyWyvern VKI (http://www.greywyvern.com/code/javascript/keyboard).",
+  "description": "Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/)inspired by the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard).",
   "devDependencies": {
     "bower": "^1.7.7",
     "conventional-changelog": "0.0.16",
@@ -15,6 +15,7 @@
     "gulp-jshint": "^1.9.2",
     "gulp-load-plugins": "^0.8.0",
     "gulp-uglify": "^1.1.0",
+    "gulp-replace": "^0.5.4",
     "jshint-stylish": "^1.0.0"
   },
   "directories": {},
