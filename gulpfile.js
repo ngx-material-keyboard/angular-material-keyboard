@@ -5,14 +5,14 @@ var gulp = require('gulp'),
 		config: path.join(__dirname, 'package.json')
 	});
 
-var path = {
+var sctiptPath = {
 	src: {
-		files: 'src/**/*.js'
+		files: 'src/js/**/*.js'
 	}
-}
+};
 
 gulp.task('jshint', function(done) {
-	gulp.src(path.src.files)
+	gulp.src(sctiptPath.src.files)
 	.pipe(plugins.jshint('.jshintrc'))
 	.pipe(plugins.jshint.reporter(jshintReporter));
 	done();
@@ -39,23 +39,23 @@ gulp.task('build', function() {
 		''].join('\n');
 
 	gulp.src([
-		'src/vki-core.js',
-		'src/angular-virtual-keyboard.js'
+		'src/js/vki-core.js',
+		'src/js/mdKeyboard.js'
 	])
-	.pipe(plugins.concat('angular-virtual-keyboard.js'))
+	.pipe(plugins.concat('mdKeyboard.js'))
 	.pipe(plugins.header(header, {pkg: pkg}))
 	.pipe(plugins.footer(footer))
-	.pipe(gulp.dest('./release/'))
+	.pipe(gulp.dest('./dist/'))
 	.pipe(plugins.uglify())
-	.pipe(plugins.concat('angular-virtual-keyboard.min.js'))
-	.pipe(gulp.dest('./release/'));
+	.pipe(plugins.concat('mdKeyboard.min.js'))
+	.pipe(gulp.dest('./dist/'));
 
-	gulp.src('css/angular-virtual-keyboard.css')
-	.pipe(gulp.dest('./release/'));
+	gulp.src('src/css/mdKeyboard.css')
+	.pipe(gulp.dest('./dist/'));
 });
 
 gulp.task('default', ['jshint', 'build'], function() {
-	gulp.watch(path.src.files, ['jshint', 'build']);
+	gulp.watch(sctiptPath.src.files, ['jshint', 'build']);
 });
 
 gulp.task('changelog', function(done) {

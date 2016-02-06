@@ -1,11 +1,12 @@
 {
   "author": {
-    "email": "postdavidenke.dem",
+    "email": "postdavidenke.de",
     "name": "David Enke"
   },
   "dependencies": {},
-  "description": "An AngularJs Virtual Keyboard Interface based on GreyWyvern VKI",
+  "description": "Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/) and the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard) based on GreyWyvern VKI (http://www.greywyvern.com/code/javascript/keyboard).",
   "devDependencies": {
+    "bower": "^1.7.7",
     "conventional-changelog": "0.0.16",
     "gulp": "^3.8.11",
     "gulp-concat": "^2.5.2",
@@ -31,7 +32,7 @@
   "main": "index.js",
   "maintainers": [
     {
-      "email": "postdavidenke.dem",
+      "email": "postdavidenke.de",
       "name": "David Enke"
     }
   ],
