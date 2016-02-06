@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "homepage": "https://github.com/davidenke/angular-material-keyboard",
   "author": "David Enke <postdavidenke.de>",
-  "description": "Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/) and the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard) based on GreyWyvern VKI (http://www.greywyvern.com/code/javascript/keyboard).",
+  "description": "Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/)inspired by the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard).",
   "main": [
     "dist/mdKeyboard.min.js",
     "dist/mdKeyboard.css"
