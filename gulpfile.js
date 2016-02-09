@@ -2,7 +2,10 @@ var gulp = require('gulp'),
     path = require('path'),
     jshintReporter = require('jshint-stylish'),
     plugins = require('gulp-load-plugins')({
-        config: path.join(__dirname, 'package.json')
+        config: path.join(__dirname, 'package.json'),
+        rename: {
+            'gulp-angular-embed-templates': 'embedTemplates'
+        }
     });
 
 var sctiptPath = {
@@ -41,11 +44,16 @@ gulp.task('build', function () {
 
     gulp
         .src([
-            'src/js/mdKeyboard.js'
+            'src/js/mdKeyboard.module.js',
+            'src/js/mdKeyboard.layouts.js',
+            'src/js/mdKeyboard.deadkey.js',
+            'src/js/mdKeyboard.provider.js',
+            'src/js/mdKeyboard.directive.js'
         ])
         .pipe(plugins.concat('mdKeyboard.js'))
         .pipe(plugins.header(header, {pkg: pkg}))
         .pipe(plugins.footer(footer))
+        .pipe(plugins.embedTemplates())
         .pipe(plugins.replace(/[\r\n]+\s*\/\/.*TODO:+.*/gi, ''))
         .pipe(gulp.dest('./dist/'))
         .pipe(plugins.uglify())

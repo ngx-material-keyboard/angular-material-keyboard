@@ -1,0 +1,9 @@
+<md-bottom-sheet class="md-grid" layout="column" ng-cloak>
+    <div ng-repeat="row in keyboard.keys" layout="row">
+        <div flex="shrink">
+            <md-button ng-repeat="key in row" class="md-raised" ng-click="pressed($event)" aria-label="Key {{key[0]}}">
+                {{key[0]}}
+            </md-button>
+        </div>
+    </div>
+</md-bottom-sheet>
