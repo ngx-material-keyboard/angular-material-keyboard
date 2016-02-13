@@ -2,7 +2,7 @@ angular
     .module('mdKeyboard')
     .directive('mdKeyboard', MdKeyboardDirective);
 
-function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdTheming, $mdBottomSheet, $rootElement, $mdGesture) {
+function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboardProvider, $rootElement, $mdGesture) {
     return {
         restrict: 'A',
         require: '?ngModel',
@@ -18,7 +18,7 @@ function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdThemi
                 return;
             }
 
-            var bottomSheet;
+            var keyboard;
 
             // Don't show virtual keyboard in mobile devices (default)
             //TODO: test detection and reimplement if neccessary
@@ -47,75 +47,28 @@ function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdThemi
             // open bottomsheet with keyboard on focus TODO: and without backdrop
             element
                 .bind('focus', showKeyboard)
-                .bind('blur', hideKeyboard);
+                /*.bind('blur', hideKeyboard)*/;
 
             function showKeyboard() {
-                bottomSheet = $mdBottomSheet.show({
+                keyboard = $mdKeyboardProvider.show({
                     templateUrl: '../view/mdKeyboard.view.html',
                     controller: KeyboardController,
                     clickOutsideToClose: attrs.clickOutsideToClose || false,
                     escapeToClose: attrs.escapeToClose || false,
                     preserveScope: attrs.preserveScope || true,
-                    useBackdrop: attrs.useBackdrop || false,
-                    onShow: onShowKeyboard
+                    useBackdrop: attrs.useBackdrop || false
                 });
             }
 
             function hideKeyboard() {
-                if (bottomSheet) {
-                    $mdBottomSheet.hide();
-                    bottomSheet = undefined;
+                if (keyboard) {
+                    $mdKeyboardProvider.hide();
+                    keyboard = undefined;
                 }
-            }
-
-            function onShowKeyboard(scope, element, options, controller) {
-                $log.debug(element);
-                element = $mdUtil.extractElementByName(element, 'md-bottom-sheet');
-
-                // Add a backdrop that will close on click
-                backdrop = $mdUtil.createBackdrop(scope, "md-bottom-sheet-backdrop md-opaque");
-
-                if (options.clickOutsideToClose) {
-                    backdrop.on('click', function () {
-                        $mdUtil.nextTick($mdBottomSheet.cancel, true);
-                    });
-                }
-
-                $mdTheming.inherit(backdrop, options.parent);
-
-                $animate.enter(backdrop, options.parent, null);
-
-                var bottomSheet = new BottomSheet(element, options.parent);
-                options.bottomSheet = bottomSheet;
-
-                $mdTheming.inherit(bottomSheet.element, options.parent);
-
-                if (options.disableParentScroll) {
-                    options.restoreScroll = $mdUtil.disableScrollAround(bottomSheet.element, options.parent);
-                }
-
-                return $animate
-                    .enter(bottomSheet.element, options.parent)
-                    .then(function () {
-                        var focusable = $mdUtil.findFocusTarget(element) || angular.element(
-                                element[0].querySelector('button') ||
-                                element[0].querySelector('a') ||
-                                element[0].querySelector('[ng-click]')
-                            );
-                        focusable.focus();
-
-                        if (options.escapeToClose) {
-                            options.rootElementKeyupCallback = function (e) {
-                                if (e.keyCode === $mdConstant.KEY_CODE.ESCAPE) {
-                                    $mdUtil.nextTick($mdBottomSheet.cancel, true);
-                                }
-                            };
-                            $rootElement.on('keyup', options.rootElementKeyupCallback);
-                        }
-                    });
             }
 
             function KeyboardController($scope, $log, mdKeyboard) {
+                //$log.debug(mdKeyboard, element);
                 //element.blur();
                 //element.focus();
 
@@ -129,6 +82,12 @@ function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdThemi
             // listen and hide the keyboard...
             scope.$on('$destroy', function () {
                 hideKeyboard();
+            });
+
+            // When navigation force destroys an interimElement, then
+            // listen and $destroy() that interim instance...
+            scope.$on('$destroy', function () {
+                $mdKeyboardProvider.destroy();
             });
         }
     }

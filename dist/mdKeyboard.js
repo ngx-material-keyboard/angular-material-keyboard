@@ -8,7 +8,7 @@
  */
 (function (angular) {
 
-angular.module('mdKeyboard', ['material.components.bottomSheet']);
+angular.module('mdKeyboard', ['material.core']);
 
 /* See http://www.greywyvern.com/code/javascript/keyboard for examples
  * and usage instructions.
@@ -1089,49 +1089,168 @@ angular
 
 angular
     .module('mdKeyboard')
-    .provider('mdKeyboard', MdKeyboardProvider);
-
-function MdKeyboardProvider(keyboardLayouts, keyboardDeadkey) {
-    var self = this;
-
-    this.layouts = keyboardLayouts;
-    this.deadkey = keyboardDeadkey;
-    this.themable = true;
-    this.layout = 'US International';
-    this.symbols = {
-        '\u00a0': "NB\nSP", '\u200b': "ZW\nSP", '\u200c': "ZW\nNJ", '\u200d': "ZW\nJ"
-    };
-    this.numpad = [
+    .constant('keyboardNumpad', [
         [["$"], ["\u00a3"], ["\u20ac"], ["\u00a5"]],
         [["7"], ["8"], ["9"], ["/"]],
         [["4"], ["5"], ["6"], ["*"]],
         [["1"], ["2"], ["3"], ["-"]],
         [["0"], ["."], ["="], ["+"]]
-    ];
+    ]);
 
-    console.log(this.deadkey);
+angular
+    .module('mdKeyboard')
+    .constant('keyboardSymbols', {
+        '\u00a0': "NB\nSP", '\u200b': "ZW\nSP", '\u200c': "ZW\nNJ", '\u200d': "ZW\nJ"
+    });
 
-    this.setThemable = function (value) {
-        this.themable = !!value;
+angular
+    .module('mdKeyboard')
+    .provider('$mdKeyboardProvider', MdKeyboardProvider);
+
+function MdKeyboardProvider(keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
+    // how fast we need to flick down to close the sheet, pixels/ms
+    var CLOSING_VELOCITY = 0.5;
+    var PADDING = 80; // same as css
+
+    return keyboardProvider = {
+        themable: true,
+        onShow: onShow,
+        onRemove: onRemove,
+        clickOutsideToClose: true,
+        disableParentScroll: true,
+
+        layouts: keyboardLayouts,
+        deadkey: keyboardDeadkey,
+        symbols: keyboardSymbols,
+        numpad: keyboardNumpad,
+        layout: 'US International',
+
+        setNonce: function(nonceValue) {
+            nonce = nonceValue;
+        },
+        setDefaultTheme: function(theme) {
+            defaultTheme = theme;
+        },
+        alwaysWatchTheme: function(alwaysWatch) {
+            alwaysWatchTheme = alwaysWatch;
+        },
+        generateThemesOnDemand: function(onDemand) {
+            generateOnDemand = onDemand;
+        },
+        $get: function () {}
     };
-    this.setLayout = function (value) {
-        this.layout = value || 'US International';
-    };
 
-    this.$get = function () {
+    function onShow(scope, element, options, controller) {
+
+        element = $mdUtil.extractElementByName(element, 'md-keyboard');
+
+        if (options.clickOutsideToClose) {
+            backdrop.on('click', function () {
+                $mdUtil.nextTick($mdKeyboard.cancel, true);
+            });
+        }
+
+        $mdTheming.inherit(backdrop, options.parent);
+
+        var keyboard = new Keyboard(element, options.parent);
+        options.keyboard = keyboard;
+
+        $mdTheming.inherit(keyboard.element, options.parent);
+
+        if (options.disableParentScroll) {
+            options.restoreScroll = $mdUtil.disableScrollAround(keyboard.element, options.parent);
+        }
+
+        return $animate.enter(keyboard.element, options.parent)
+            .then(function () {
+                var focusable = $mdUtil.findFocusTarget(element) || angular.element(
+                        element[0].querySelector('button') ||
+                        element[0].querySelector('a') ||
+                        element[0].querySelector('[ng-click]')
+                    );
+                focusable.focus();
+
+                if (options.escapeToClose) {
+                    options.rootElementKeyupCallback = function (e) {
+                        if (e.keyCode === $mdConstant.KEY_CODE.ESCAPE) {
+                            $mdUtil.nextTick($mdKeyboard.cancel, true);
+                        }
+                    };
+                    $rootElement.on('keyup', options.rootElementKeyupCallback);
+                }
+            });
+
+    }
+
+    function onRemove(scope, element, options) {
+
+        var keyboard = options.keyboard;
+
+        $animate.leave(backdrop);
+        return $animate.leave(keyboard.element).then(function () {
+            if (options.disableParentScroll) {
+                options.restoreScroll();
+                delete options.restoreScroll;
+            }
+
+            keyboard.cleanup();
+        });
+    }
+
+    /**
+     * Keyboard class to apply bottom-sheet behavior to an element
+     */
+    function Keyboard(element, parent) {
+        var deregister = $mdGesture.register(parent, 'drag', {horizontal: false});
+        parent
+            .on('$md.dragstart', onDragStart)
+            .on('$md.drag', onDrag)
+            .on('$md.dragend', onDragEnd);
+
         return {
-            getLayout: function (value) {
-                return self.layouts[value || self.layout];
+            element: element,
+            cleanup: function cleanup() {
+                deregister();
+                parent.off('$md.dragstart', onDragStart);
+                parent.off('$md.drag', onDrag);
+                parent.off('$md.dragend', onDragEnd);
             }
         };
-    };
+
+        function onDragStart(ev) {
+            // Disable transitions on transform so that it feels fast
+            element.css($mdConstant.CSS.TRANSITION_DURATION, '0ms');
+        }
+
+        function onDrag(ev) {
+            var transform = ev.pointer.distanceY;
+            if (transform < 5) {
+                // Slow down drag when trying to drag up, and stop after PADDING
+                transform = Math.max(-PADDING, transform / 2);
+            }
+            element.css($mdConstant.CSS.TRANSFORM, 'translate3d(0,' + (PADDING + transform) + 'px,0)');
+        }
+
+        function onDragEnd(ev) {
+            if (ev.pointer.distanceY > 0 &&
+                (ev.pointer.distanceY > 20 || Math.abs(ev.pointer.velocityY) > CLOSING_VELOCITY)) {
+                var distanceRemaining = element.prop('offsetHeight') - ev.pointer.distanceY;
+                var transitionDuration = Math.min(distanceRemaining / ev.pointer.velocityY * 0.75, 500);
+                element.css($mdConstant.CSS.TRANSITION_DURATION, transitionDuration + 'ms');
+                $mdUtil.nextTick($mdKeyboard.cancel, true);
+            } else {
+                element.css($mdConstant.CSS.TRANSITION_DURATION, '');
+                element.css($mdConstant.CSS.TRANSFORM, '');
+            }
+        }
+    }
 }
 
 angular
     .module('mdKeyboard')
     .directive('mdKeyboard', MdKeyboardDirective);
 
-function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdTheming, $mdBottomSheet, $rootElement, $mdGesture) {
+function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboardProvider, $rootElement, $mdGesture) {
     return {
         restrict: 'A',
         require: '?ngModel',
@@ -1147,7 +1266,7 @@ function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdThemi
                 return;
             }
 
-            var bottomSheet;
+            var keyboard;
 
             // Don't show virtual keyboard in mobile devices (default)
             if ($injector.has('UAParser')) {
@@ -1172,76 +1291,28 @@ function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdThemi
              */
             element
                 .bind('focus', showKeyboard)
-                .bind('blur', hideKeyboard);
+                /*.bind('blur', hideKeyboard)*/;
 
             function showKeyboard() {
-                bottomSheet = $mdBottomSheet
-                    .show({
-                        template:'<md-bottom-sheet class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex=shrink><md-button ng-repeat="key in row" class=md-raised ng-click=pressed($event) aria-label="Key {{key[0]}}">{{key[0]}}</md-button></div></div></md-bottom-sheet>',
-                        controller: KeyboardController,
-                        clickOutsideToClose: attrs.clickOutsideToClose || false,
-                        escapeToClose: attrs.escapeToClose || false,
-                        preserveScope: attrs.preserveScope || true,
-                        useBackdrop: attrs.useBackdrop || false,
-                        onShow: onShowKeyboard
-                    });
+                keyboard = $mdKeyboardProvider.show({
+                    template:'<md-bottom-sheet class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex=shrink><md-button ng-repeat="key in row" class=md-raised ng-click=pressed($event) aria-label="Key {{key[0]}}">{{key[0]}}</md-button></div></div></md-bottom-sheet>',
+                    controller: KeyboardController,
+                    clickOutsideToClose: attrs.clickOutsideToClose || false,
+                    escapeToClose: attrs.escapeToClose || false,
+                    preserveScope: attrs.preserveScope || true,
+                    useBackdrop: attrs.useBackdrop || false
+                });
             }
 
             function hideKeyboard() {
-                if (bottomSheet) {
-                    $mdBottomSheet.hide();
-                    bottomSheet = undefined;
+                if (keyboard) {
+                    $mdKeyboardProvider.hide();
+                    keyboard = undefined;
                 }
-            }
-
-            function onShowKeyboard(scope, element, options, controller) {
-                $log.debug(element);
-                element = $mdUtil.extractElementByName(element, 'md-bottom-sheet');
-
-                // Add a backdrop that will close on click
-                backdrop = $mdUtil.createBackdrop(scope, "md-bottom-sheet-backdrop md-opaque");
-
-                if (options.clickOutsideToClose) {
-                    backdrop.on('click', function () {
-                        $mdUtil.nextTick($mdBottomSheet.cancel, true);
-                    });
-                }
-
-                $mdTheming.inherit(backdrop, options.parent);
-
-                $animate.enter(backdrop, options.parent, null);
-
-                var bottomSheet = new BottomSheet(element, options.parent);
-                options.bottomSheet = bottomSheet;
-
-                $mdTheming.inherit(bottomSheet.element, options.parent);
-
-                if (options.disableParentScroll) {
-                    options.restoreScroll = $mdUtil.disableScrollAround(bottomSheet.element, options.parent);
-                }
-
-                return $animate
-                    .enter(bottomSheet.element, options.parent)
-                    .then(function () {
-                        var focusable = $mdUtil.findFocusTarget(element) || angular.element(
-                                element[0].querySelector('button') ||
-                                element[0].querySelector('a') ||
-                                element[0].querySelector('[ng-click]')
-                            );
-                        focusable.focus();
-
-                        if (options.escapeToClose) {
-                            options.rootElementKeyupCallback = function (e) {
-                                if (e.keyCode === $mdConstant.KEY_CODE.ESCAPE) {
-                                    $mdUtil.nextTick($mdBottomSheet.cancel, true);
-                                }
-                            };
-                            $rootElement.on('keyup', options.rootElementKeyupCallback);
-                        }
-                    });
             }
 
             function KeyboardController($scope, $log, mdKeyboard) {
+                //$log.debug(mdKeyboard, element);
                 //element.blur();
                 //element.focus();
 
@@ -1255,6 +1326,12 @@ function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdThemi
             // listen and hide the keyboard...
             scope.$on('$destroy', function () {
                 hideKeyboard();
+            });
+
+            // When navigation force destroys an interimElement, then
+            // listen and $destroy() that interim instance...
+            scope.$on('$destroy', function () {
+                $mdKeyboardProvider.destroy();
             });
         }
     }
