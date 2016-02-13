@@ -1,18 +1,26 @@
 angular
-    .module('mdKeyboard')
-    .directive('mdKeyboard', MdKeyboardDirective);
+    .module('material.components.keyboard')
+    .directive('mdKeyboard', MdKeyboardDirective)
+    .directive('useKeyboard', useKeyboardDirective);
 
-function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboardProvider, $rootElement, $mdGesture) {
+function MdKeyboardDirective($mdKeyboard, $mdTheming) {
+    return {
+        restrict: 'E',
+        link: function postLink(scope, element, attr) {
+            $mdTheming(element);
+            // When navigation force destroys an interimElement, then
+            // listen and $destroy() that interim instance...
+            scope.$on('$destroy', function () {
+                $mdKeyboard.destroy();
+            });
+        }
+    };
+}
+
+function useKeyboardDirective($mdKeyboard, $injector) {
     return {
         restrict: 'A',
         require: '?ngModel',
-        scope: {
-            clickOutsideToClose: '=',
-            escapeToClose: '=',
-            preserveScope: '=',
-            showInMobile: '=',
-            useBackdrop: '='
-        },
         link: function (scope, element, attrs, ngModelCtrl) {
             if (!ngModelCtrl) {
                 return;
@@ -36,59 +44,37 @@ function MdKeyboardDirective($injector, $animate, $mdConstant, $mdUtil, $mdThemi
                 }
             }
 
-            /*
-             ngVirtualKeyboardService.attach(elements[0], scope.config, function() {
-             $timeout(function() {
-             ngModelCtrl.$setViewValue(elements[0].value);
-             });
-             });
-             */
-
-            // open bottomsheet with keyboard on focus TODO: and without backdrop
+            // open keyboard on focus
             element
                 .bind('focus', showKeyboard)
-                /*.bind('blur', hideKeyboard)*/;
+                .bind('blur', hideKeyboard);
 
             function showKeyboard() {
-                keyboard = $mdKeyboardProvider.show({
+                keyboard = $mdKeyboard.show({
                     templateUrl: '../view/mdKeyboard.view.html',
-                    controller: KeyboardController,
-                    clickOutsideToClose: attrs.clickOutsideToClose || false,
-                    escapeToClose: attrs.escapeToClose || false,
-                    preserveScope: attrs.preserveScope || true,
-                    useBackdrop: attrs.useBackdrop || false
+                    controller: function mdKeyboardCtrl($scope) {
+                        this.resolve = function () {
+                            $mdKeyboard.hide('ok');
+                        };
+                        if (attrs.useKeyboard) {
+                            $mdKeyboard.setLayout(attrs.useKeyboard);
+                        }
+                        $scope.keyboard = $mdKeyboard.getLayout();
+                        $scope.pressed = function ($event) {
+                            $event.preventDefault();
+                            console.log($event);
+                        }
+                    },
+                    bindToController: true
                 });
             }
 
             function hideKeyboard() {
                 if (keyboard) {
-                    $mdKeyboardProvider.hide();
+                    $mdKeyboard.hide();
                     keyboard = undefined;
                 }
             }
-
-            function KeyboardController($scope, $log, mdKeyboard) {
-                //$log.debug(mdKeyboard, element);
-                //element.blur();
-                //element.focus();
-
-                $scope.keyboard = mdKeyboard.getLayout();
-                $scope.pressed = function ($event) {
-                    $log.debug($event);
-                }
-            }
-
-            // When navigation force destroys an element, then
-            // listen and hide the keyboard...
-            scope.$on('$destroy', function () {
-                hideKeyboard();
-            });
-
-            // When navigation force destroys an interimElement, then
-            // listen and $destroy() that interim instance...
-            scope.$on('$destroy', function () {
-                $mdKeyboardProvider.destroy();
-            });
         }
     }
 }

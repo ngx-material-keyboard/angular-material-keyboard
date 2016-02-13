@@ -10,7 +10,7 @@
 //   have added additional dead keys to the ones below.
 
 angular
-    .module('mdKeyboard')
+    .module('material.components.keyboard')
     .constant('keyboardDeadkey', (function () {
         var deadkey = {
             '"': {

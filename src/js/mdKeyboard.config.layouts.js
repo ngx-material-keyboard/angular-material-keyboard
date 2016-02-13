@@ -45,7 +45,7 @@
  */
 
 angular
-    .module('mdKeyboard')
+    .module('material.components.keyboard')
     .constant('keyboardLayouts', (function () {
         var layouts = {
             '\u0627\u0644\u0639\u0631\u0628\u064a\u0629': {

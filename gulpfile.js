@@ -62,7 +62,9 @@ gulp.task('build', function () {
         .pipe(plugins.concat('mdKeyboard.min.js'))
         .pipe(gulp.dest('./dist/'));
 
-    gulp.src('src/css/mdKeyboard.css')
+    gulp
+        .src('src/css/*.scss')
+        .pipe(plugins.sass().on('error', plugins.sass.logError))
         .pipe(gulp.dest('./dist/'));
 });
 

@@ -1,1 +1,2 @@
-angular.module('mdKeyboard', ['material.core']);
+angular
+    .module('material.components.keyboard', ['material.core']);
