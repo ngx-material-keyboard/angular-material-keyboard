@@ -113,6 +113,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                     parent.off('$md.dragstart', onDragStart);
                     parent.off('$md.drag', onDrag);
                     parent.off('$md.dragend', onDragEnd);
+                    parent.triggerHandler('focus');
                 }
             };
 

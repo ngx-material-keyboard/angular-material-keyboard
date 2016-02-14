@@ -59,6 +59,57 @@ angular
 
 angular
     .module('material.components.keyboard')
+    .config(function ($mdThemingProvider) {
+    });
+
+    /* See http://www.greywyvern.com/code/javascript/keyboard for examples
+     * and usage instructions.
+     *
+     * Version 1.49 - November 8, 2011
+     *   - Don't display language drop-down if only one keyboard available
+     *
+     *   See full changelog at:
+     *     http://www.greywyvern.com/code/javascript/keyboard.changelog.txt
+     *
+     * Keyboard Credits
+     *   - Yiddish (Yidish Lebt) keyboard layout by Simche Taub (jidysz.net)
+     *   - Urdu Phonetic keyboard layout by Khalid Malik
+     *   - Yiddish keyboard layout by Helmut Wollmersdorfer
+     *   - Khmer keyboard layout by Sovann Heng (km-kh.com)
+     *   - Dari keyboard layout by Saif Fazel
+     *   - Kurdish keyboard layout by Ara Qadir
+     *   - Assamese keyboard layout by Kanchan Gogoi
+     *   - Bulgarian BDS keyboard layout by Milen Georgiev
+     *   - Basic Japanese Hiragana/Katakana keyboard layout by Damjan
+     *   - Ukrainian keyboard layout by Dmitry Nikitin
+     *   - Macedonian keyboard layout by Damjan Dimitrioski
+     *   - Pashto keyboard layout by Ahmad Wali Achakzai (qamosona.com)
+     *   - Armenian Eastern and Western keyboard layouts by Hayastan Project (www.hayastan.co.uk)
+     *   - Pinyin keyboard layout from a collaboration with Lou Winklemann
+     *   - Kazakh keyboard layout by Alex Madyankin
+     *   - Danish keyboard layout by Verner KjÃ¦rsgaard
+     *   - Slovak keyboard layout by Daniel Lara (www.learningslovak.com)
+     *   - Belarusian and Serbian Cyrillic keyboard layouts by Evgeniy Titov
+     *   - Bulgarian Phonetic keyboard layout by Samuil Gospodinov
+     *   - Swedish keyboard layout by HÃ¥kan Sandberg
+     *   - Romanian keyboard layout by Aurel
+     *   - Farsi (Persian) keyboard layout by Kaveh Bakhtiyari (www.bakhtiyari.com)
+     *   - Burmese keyboard layout by Cetanapa
+     *   - Bosnian/Croatian/Serbian Latin/Slovenian keyboard layout by Miran Zeljko
+     *   - Hungarian keyboard layout by Antal Sall 'Hiromacu'
+     *   - Arabic keyboard layout by Srinivas Reddy
+     *   - Italian and Spanish (Spain) keyboard layouts by dictionarist.com
+     *   - Lithuanian and Russian keyboard layouts by Ramunas
+     *   - German keyboard layout by QuHno
+     *   - French keyboard layout by Hidden Evil
+     *   - Polish Programmers layout by moose
+     *   - Turkish keyboard layouts by offcu
+     *   - Dutch and US Int'l keyboard layouts by jerone
+     *
+     */
+
+    angular
+        .module('material.components.keyboard')
     .constant('keyboardLayouts', (function () {
         var layouts = {
             '\u0627\u0644\u0639\u0631\u0628\u064a\u0629': {
@@ -1219,6 +1270,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                     parent.off('$md.dragstart', onDragStart);
                     parent.off('$md.drag', onDrag);
                     parent.off('$md.dragend', onDragEnd);
+                    parent.triggerHandler('focus');
                 }
             };
 
@@ -1275,7 +1327,7 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector) {
+    function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
@@ -1300,37 +1352,113 @@ function useKeyboardDirective($mdKeyboard, $injector) {
                 }
             }
 
-            /*
-             ngVirtualKeyboardService.attach(elements[0], scope.config, function() {
-             $timeout(function() {
-             ngModelCtrl.$setViewValue(elements[0].value);
-             });
-             });
-             */
-
             // open keyboard on focus
             element
                 .bind('focus', showKeyboard)
-                .bind('blur', hideKeyboard);
+            //    .bind('blur', hideKeyboard);
 
             function showKeyboard() {
-                keyboard = $mdKeyboard.show({
-                    template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex=shrink><md-button ng-repeat="key in row" class=md-raised ng-mousedown=pressed($event) aria-label="Key {{key[0]}}">{{key[0]}}</md-button></div></div></md-keyboard>',
-                    controller: function mdKeyboardCtrl($scope) {
-                        this.resolve = function () {
-                            $mdKeyboard.hide('ok');
-                        };
-                        if (attrs.useKeyboard) {
-                            $mdKeyboard.setLayout(attrs.useKeyboard);
-                        }
-                        $scope.keyboard = $mdKeyboard.getLayout();
-                        $scope.pressed = function ($event) {
-                            $event.preventDefault();
-                            console.log($event);
-                        }
-                    },
-                    bindToController: true
-                });
+                if (!keyboard) {
+                    keyboard = $mdKeyboard.show({
+                        template: '<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row"><md-button ng-switch=key[0] class=md-raised ng-mousedown="pressed($event, key)" aria-label={{key[0]}}><md-icon ng-switch-when=Bksp md-svg-icon=hardware:keyboard_backspace></md-icon><md-icon ng-switch-when=Tab md-svg-icon=hardware:keyboard_tab></md-icon><md-icon ng-switch-when=Caps md-svg-icon=hardware:keyboard_capslock></md-icon><md-icon ng-switch-when=Enter md-svg-icon=hardware:keyboard_return></md-icon><span ng-switch-default>{{key[0]}}</span></md-button></div></div></md-keyboard>',
+                        controller: function mdKeyboardCtrl($scope) {
+                            this.resolve = function () {
+                                $mdKeyboard.hide('ok');
+                            };
+                            if (attrs.useKeyboard) {
+                                $mdKeyboard.setLayout(attrs.useKeyboard);
+                            }
+                            $scope.keyboard = $mdKeyboard.getLayout();
+                            $scope.pressed = triggerKey;
+                        },
+                        bindToController: true
+                    });
+                }
+            }
+
+            function triggerKey($event, key) {
+                $event.preventDefault();
+
+                switch (key[1]) {
+                    case "Caps":
+                    case "Shift":
+                    case "Alt":
+                    case "AltGr":
+                    case "AltLk":
+                        // modify input, visualize
+                        //self.VKI_modify(type);
+                        break;
+                    case "Tab":
+                        // cycle through elements
+                        // or insert \t tab
+                        //if (self.VKI_activeTab) {
+                        //    if (self.VKI_target.form) {
+                        //        var target = self.VKI_target, elems = target.form.elements;
+                        //        self.VKI_close(false);
+                        //        for (var z = 0, me = false, j = -1; z < elems.length; z++) {
+                        //            if (j == -1 && elems[z].getAttribute("VKI_attached")) j = z;
+                        //            if (me) {
+                        //                if (self.VKI_activeTab == 1 && elems[z]) break;
+                        //                if (elems[z].getAttribute("VKI_attached")) break;
+                        //            } else if (elems[z] == target) me = true;
+                        //        }
+                        //        if (z == elems.length) z = Math.max(j, 0);
+                        //        if (elems[z].getAttribute("VKI_attached")) {
+                        //            self.VKI_show(elems[z]);
+                        //        } else elems[z].focus();
+                        //    } else self.VKI_target.focus();
+                        //} else self.VKI_insert("\t");
+                        //return false;
+                        break;
+                    case "Bksp":
+                        // backspace
+                        //self.VKI_target.focus();
+                        //if (self.VKI_target.setSelectionRange && hasSelectionStartEnd(self.VKI_target) && !self.VKI_target.readOnly) {
+                        //    var rng = [self.VKI_target.selectionStart, self.VKI_target.selectionEnd];
+                        //    if (rng[0] < rng[1]) rng[0]++;
+                        //    self.VKI_target.value = self.VKI_target.value.substr(0, rng[0] - 1) + self.VKI_target.value.substr(rng[1]);
+                        //    self.VKI_target.setSelectionRange(rng[0] - 1, rng[0] - 1);
+                        //} else if (self.VKI_target.createTextRange && !self.VKI_target.readOnly) {
+                        //    try {
+                        //        self.VKI_target.range.select();
+                        //    } catch (e) {
+                        //        self.VKI_target.range = document.selection.createRange();
+                        //    }
+                        //    if (!self.VKI_target.range.text.length) self.VKI_target.range.moveStart('character', -1);
+                        //    self.VKI_target.range.text = "";
+                        //} else self.VKI_target.value = self.VKI_target.value.substr(0, self.VKI_target.value.length - 1);
+                        //if (self.VKI_shift) self.VKI_modify("Shift");
+                        //if (self.VKI_altgr) self.VKI_modify("AltGr");
+                        //self.VKI_target.focus();
+                        //self.keyInputCallback();
+                        //return true;
+                        break;
+                    case "Enter":
+                        // submit form or insert \n new line
+                        //if (self.VKI_target.nodeName != "TEXTAREA") {
+                        //    if (typeof self.VKI_enterSubmit === 'function') {
+                        //        self.VKI_enterSubmit.apply({}, [self.VKI_target.value]);
+                        //    } else if (self.VKI_enterSubmit && self.VKI_target.form) {
+                        //        for (var z = 0, subm = false; z < self.VKI_target.form.elements.length; z++)
+                        //            if (self.VKI_target.form.elements[z].type == "submit") subm = true;
+                        //        if (!subm) self.VKI_target.form.submit();
+                        //    }
+                        //    self.VKI_close(false);
+                        //} else self.VKI_insert("\n");
+                        //return true;
+                        break;
+                    default:
+                        var event = new window.KeyboardEvent('keydown', {
+                            bubbles: true,
+                            cancelable: true,
+                            shiftKey: true,
+                            keyCode: key[0].charCodeAt(0)
+                        });
+                        element[0].dispatchEvent(event);
+
+                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + key[0]);
+                        ngModelCtrl.$render();
+                }
             }
 
             function hideKeyboard() {

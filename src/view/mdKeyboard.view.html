@@ -1,8 +1,12 @@
 <md-keyboard class="md-grid" layout="column" ng-cloak>
     <div ng-repeat="row in keyboard.keys" layout="row">
-        <div flex="shrink">
-            <md-button ng-repeat="key in row" class="md-raised" ng-mousedown="pressed($event)" aria-label="Key {{key[0]}}">
-                {{key[0]}}
+        <div flex ng-repeat="key in row">
+            <md-button ng-switch="key[0]" class="md-raised" ng-mousedown="pressed($event, key)" aria-label="{{key[0]}}">
+                <md-icon ng-switch-when="Bksp" md-svg-icon="hardware:keyboard_backspace"></md-icon>
+                <md-icon ng-switch-when="Tab" md-svg-icon="hardware:keyboard_tab"></md-icon>
+                <md-icon ng-switch-when="Caps" md-svg-icon="hardware:keyboard_capslock"></md-icon>
+                <md-icon ng-switch-when="Enter" md-svg-icon="hardware:keyboard_return"></md-icon>
+                <span ng-switch-default>{{key[0]}}</span>
             </md-button>
         </div>
     </div>

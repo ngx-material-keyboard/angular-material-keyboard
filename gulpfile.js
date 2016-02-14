@@ -45,6 +45,7 @@ gulp.task('build', function () {
     gulp
         .src([
             'src/js/mdKeyboard.module.js',
+            'src/js/mdKeyboard.config.js',
             'src/js/mdKeyboard.config.layouts.js',
             'src/js/mdKeyboard.config.deadkey.js',
             'src/js/mdKeyboard.config.numpad.js',
