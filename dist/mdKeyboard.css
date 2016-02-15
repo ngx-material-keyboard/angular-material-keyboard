@@ -9,10 +9,9 @@ md-keyboard {
   border-top-style: solid;
   transform: translate3d(0, 80px, 0);
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    transition-property: transform;
-    background-color: #FAFAFA;
-    border-top-color: #E0E0E0;
-}
+  transition-property: transform;
+  background-color: #FAFAFA;
+  border-top-color: #E0E0E0; }
   md-keyboard.md-has-header {
     padding-top: 0; }
   md-keyboard.ng-enter {
@@ -31,11 +30,9 @@ md-keyboard {
     line-height: 56px;
     padding: 0;
     white-space: nowrap; }
-
-md-keyboard .md-button {
+  md-keyboard .md-button {
     min-width: 100%;
-    text-transform: none;
-}
+    text-transform: none; }
   md-keyboard md-inline-icon {
     display: inline-block;
     height: 24px;
@@ -50,11 +47,9 @@ md-keyboard .md-button {
     padding-left: 24px;
     padding-right: 24px;
     padding-top: 0; }
-
-md-keyboard .layout-row > .flex {
+  md-keyboard .layout-row > .flex {
     border-right: 4px solid transparent;
-    border-left: 4px solid transparent;
-}
+    border-left: 4px solid transparent; }
 
 @media screen and (-ms-high-contrast: active) {
   md-keyboard {
