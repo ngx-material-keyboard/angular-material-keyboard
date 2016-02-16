@@ -1355,7 +1355,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
             // open keyboard on focus
             element
                 .bind('focus', showKeyboard)
-            //    .bind('blur', hideKeyboard);
+                .bind('blur', hideKeyboard);
 
             function showKeyboard() {
                 if (!keyboard) {
@@ -1409,6 +1409,10 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //    } else self.VKI_target.focus();
                         //} else self.VKI_insert("\t");
                         //return false;
+
+                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\t");
+                        ngModelCtrl.$render();
+
                         break;
                     case "Bksp":
                         // backspace
@@ -1432,6 +1436,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //self.VKI_target.focus();
                         //self.keyInputCallback();
                         //return true;
+
                         break;
                     case "Enter":
                         // submit form or insert \n new line
@@ -1446,17 +1451,23 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //    self.VKI_close(false);
                         //} else self.VKI_insert("\n");
                         //return true;
+
+                        console.log(ngModelCtrl, element);
+                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\n");
+                        ngModelCtrl.$render();
+
                         break;
                     default:
-                        var event = new window.KeyboardEvent('keydown', {
-                            bubbles: true,
-                            cancelable: true,
-                            shiftKey: true,
-                            keyCode: key[0].charCodeAt(0)
-                        });
-                        element[0].dispatchEvent(event);
+                        //var event = new window.KeyboardEvent('keydown', {
+                        //    bubbles: true,
+                        //    cancelable: true,
+                        //    shiftKey: true,
+                        //    keyCode: key[0].charCodeAt(0)
+                        //});
+                        //element[0].dispatchEvent(event);
 
                         ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + key[0]);
+                        ngModelCtrl.$validate();
                         ngModelCtrl.$render();
                 }
             }
