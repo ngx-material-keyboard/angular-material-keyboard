@@ -17,15 +17,17 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
+function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
         link: function (scope, element, attrs, ngModelCtrl) {
+            // requires ngModel silently
             if (!ngModelCtrl) {
                 return;
             }
 
+            // bind instance to that var
             var keyboard;
 
             // Don't show virtual keyboard in mobile devices (default)
@@ -47,31 +49,49 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
             // open keyboard on focus
             element
                 .bind('focus', showKeyboard)
-                .bind('blur', hideKeyboard);
+                //.bind('blur', hideKeyboard);
 
             function showKeyboard() {
                 if (!keyboard) {
                     keyboard = $mdKeyboard.show({
                         templateUrl: '../view/mdKeyboard.view.html',
-                        controller: function mdKeyboardCtrl($scope) {
-                            this.resolve = function () {
-                                $mdKeyboard.hide('ok');
-                            };
-                            if (attrs.useKeyboard) {
-                                $mdKeyboard.setLayout(attrs.useKeyboard);
-                            }
-                            $scope.keyboard = $mdKeyboard.getLayout();
-                            $scope.pressed = triggerKey;
-                        },
+                        controller: mdKeyboardController,
                         bindToController: true
                     });
                 }
             }
 
+            function mdKeyboardController($scope) {
+                if (attrs.useKeyboard) {
+                    $mdKeyboard.useLayout(attrs.useKeyboard);
+                }
+
+                var toggleCaps = function() {
+                    $scope.caps = !$scope.caps;
+                };
+
+                var toggleCapsLock = function() {
+                    $scope.capsLocked = !$scope.capsLocked;
+                };
+
+                var _init = function () {
+                    $scope.resolve = function () {
+                        $mdKeyboard.hide('ok');
+                    };
+                    $scope.keyboard = $mdKeyboard.getLayout();
+                    $scope.toggleCaps = toggleCaps;
+                    $scope.toggleCapsLock = toggleCapsLock;
+                    $scope.pressed = triggerKey;
+                };
+
+                _init();
+            }
+
             function triggerKey($event, key) {
                 $event.preventDefault();
+                $log.debug('key pressed: ' + key);
 
-                switch (key[1]) {
+                switch (key) {
                     case "Caps":
                     case "Shift":
                     case "Alt":
@@ -80,6 +100,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         // modify input, visualize
                         //self.VKI_modify(type);
                         break;
+
                     case "Tab":
                         // cycle through elements
                         // or insert \t tab
@@ -103,9 +124,11 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //return false;
 
                         ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\t");
+                        ngModelCtrl.$validate();
                         ngModelCtrl.$render();
 
                         break;
+
                     case "Bksp":
                         // backspace
                         //self.VKI_target.focus();
@@ -129,7 +152,12 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //self.keyInputCallback();
                         //return true;
 
+                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '').slice(0, -1));
+                        ngModelCtrl.$validate();
+                        ngModelCtrl.$render();
+
                         break;
+
                     case "Enter":
                         // submit form or insert \n new line
                         //if (self.VKI_target.nodeName != "TEXTAREA") {
@@ -145,13 +173,17 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //return true;
 
                         if (element[0].nodeName.toUpperCase() != 'TEXTAREA') {
-
+                            // TODO: Trigger form submit
+                            scope.$broadcast('$submit');
+                            scope.$root.$broadcast('$submit');
                         } else {
                             ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\n");
+                            ngModelCtrl.$validate();
                             ngModelCtrl.$render();
                         }
 
                         break;
+
                     default:
                         //var event = new window.KeyboardEvent('keydown', {
                         //    bubbles: true,

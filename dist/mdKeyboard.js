@@ -8,8 +8,7 @@
  */
 (function (angular) {
 
-angular
-    .module('material.components.keyboard', ['material.core']);
+'use strict';
 
 /* See http://www.greywyvern.com/code/javascript/keyboard for examples
  * and usage instructions.
@@ -58,9 +57,18 @@ angular
  */
 
 angular
+    .module('material.components.keyboard', [
+        'material.core',
+        'material.components.icon'
+    ]);
+
+angular
     .module('material.components.keyboard')
-    .config(function ($mdThemingProvider) {
+    .config(function ($mdIconProvider) {
+        $mdIconProvider
+            .iconSet('hardware', 'svg/hardware-icons.svg', 24);
     });
+
 
 /* See http://www.greywyvern.com/code/javascript/keyboard for examples
  * and usage instructions.
@@ -657,7 +665,7 @@ angular
                 'name': "Romanian", 'keys': [
                     [["\u201E", "\u201D", "`", "~"], ["1", "!", "~"], ["2", "@", "\u02C7"], ["3", "#", "^"], ["4", "$", "\u02D8"], ["5", "%", "\u00B0"], ["6", "^", "\u02DB"], ["7", "&", "`"], ["8", "*", "\u02D9"], ["9", "(", "\u00B4"], ["0", ")", "\u02DD"], ["-", "_", "\u00A8"], ["=", "+", "\u00B8", "\u00B1"], ["Bksp", "Bksp"]],
                     [["Tab", "Tab"], ["q", "Q"], ["w", "W"], ["e", "E", "\u20AC"], ["r", "R"], ["t", "T"], ["y", "Y"], ["u", "U"], ["i", "I"], ["o", "O"], ["p", "P", "\u00A7"], ["\u0103", "\u0102", "[", "{"], ["\u00EE", "\u00CE", "]", "}"], ["\u00E2", "\u00C2", "\\", "|"]],
-                    [["Caps", "Caps"], ["a", "A"], ["s", "S", "\u00df"], ["d", "D", "\u00f0", "\u00D0"], ["f", "F"], ["g", "G"], ["h", "H"], ["j", "J"], ["k", "K"], ["l", "L", "\u0142", "\u0141"], [(this.VKI_isIElt8) ? "\u015F" : "\u0219", (this.VKI_isIElt8) ? "\u015E" : "\u0218", ";", ":"], [(this.VKI_isIElt8) ? "\u0163" : "\u021B", (this.VKI_isIElt8) ? "\u0162" : "\u021A", "\'", "\""], ["Enter", "Enter"]],
+                    [["Caps", "Caps"], ["a", "A"], ["s", "S", "\u00df"], ["d", "D", "\u00f0", "\u00D0"], ["f", "F"], ["g", "G"], ["h", "H"], ["j", "J"], ["k", "K"], ["l", "L", "\u0142", "\u0141"], ["\u0219", "\u0218", ";", ":"], ["\u021B", "\u021A", "\'", "\""], ["Enter", "Enter"]],
                     [["Shift", "Shift"], ["\\", "|"], ["z", "Z"], ["x", "X"], ["c", "C", "\u00A9"], ["v", "V"], ["b", "B"], ["n", "N"], ["m", "M"], [",", ";", "<", "\u00AB"], [".", ":", ">", "\u00BB"], ["/", "?"], ["Shift", "Shift"]],
                     [[" ", " ", " ", " "], ["AltGr", "AltGr"]]
                 ], 'lang': ["ro"]
@@ -1169,23 +1177,62 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     var SYMBOLS = keyboardSymbols;
     var NUMPAD = keyboardNumpad;
 
-    return $$interimElementProvider('$mdKeyboard')
+    var $mdKeyboard = $$interimElementProvider('$mdKeyboard')
         .setDefaults({
             methods: ['themable', 'disableParentScroll', 'clickOutsideToClose', 'layout'],
             options: keyboardDefaults
         })
         .addMethod('getLayout', getLayout)
-        .addMethod('setLayout', setLayout);
+        .addMethod('getLayouts', getLayouts)
+        .addMethod('useLayout', useLayout)
+        .addMethod('addLayout', addLayout);
 
+    // should be available in provider (config phase) not only
+    // in service as defined in $$interimElementProvider
+    $mdKeyboard.getLayout = getLayout;
+    $mdKeyboard.getLayouts = getLayouts;
+    $mdKeyboard.useLayout = useLayout;
+    $mdKeyboard.addLayout = addLayout;
+
+    // get currently used layout object
     function getLayout() {
         return LAYOUTS[LAYOUT];
     }
 
-    function setLayout(layout) {
-        if (LAYOUTS[LAYOUT]) {
+    // get names of available layouts
+    function getLayouts() {
+        var layouts = [];
+        angular.forEach(LAYOUTS, function(obj, layout) {
+            layouts.push(layout);
+        });
+        return layouts;
+    }
+
+    // set name of layout to use
+    function useLayout(layout) {
+        if (LAYOUTS[layout]) {
             LAYOUT = layout;
+        } else {
+            var msg = "" +
+                "The keyboard layout '" + layout + "' does not exists. \n" +
+                "To get a list of the available layouts use 'showLayouts'.";
+            console.warn(msg);
         }
     }
+
+    // add a custom layout
+    function addLayout(layout, keys) {
+        if (!LAYOUTS[layout]) {
+            LAYOUTS[layout] = keys;
+        } else {
+            var msg = "" +
+                "The keyboard layout '" + layout + "' already exists. \n" +
+                "Please use a different name.";
+            console.warn(msg);
+        }
+    }
+
+    return $mdKeyboard;
 
     /* @ngInject */
     function keyboardDefaults($animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $rootElement, $mdGesture) {
@@ -1327,15 +1374,17 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
+function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
         link: function (scope, element, attrs, ngModelCtrl) {
+            // requires ngModel silently
             if (!ngModelCtrl) {
                 return;
             }
 
+            // bind instance to that var
             var keyboard;
 
             // Don't show virtual keyboard in mobile devices (default)
@@ -1355,31 +1404,49 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
             // open keyboard on focus
             element
                 .bind('focus', showKeyboard)
-                .bind('blur', hideKeyboard);
+                //.bind('blur', hideKeyboard);
 
             function showKeyboard() {
                 if (!keyboard) {
                     keyboard = $mdKeyboard.show({
-                        template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row"><md-button ng-switch=key[0] class=md-raised ng-mousedown="pressed($event, key)" aria-label={{key[0]}}><md-icon ng-switch-when=Bksp md-svg-icon=hardware:keyboard_backspace></md-icon><md-icon ng-switch-when=Tab md-svg-icon=hardware:keyboard_tab></md-icon><md-icon ng-switch-when=Caps md-svg-icon=hardware:keyboard_capslock></md-icon><md-icon ng-switch-when=Enter md-svg-icon=hardware:keyboard_return></md-icon><span ng-switch-default>{{key[0]}}</span></md-button></div></div></md-keyboard>',
-                        controller: function mdKeyboardCtrl($scope) {
-                            this.resolve = function () {
-                                $mdKeyboard.hide('ok');
-                            };
-                            if (attrs.useKeyboard) {
-                                $mdKeyboard.setLayout(attrs.useKeyboard);
-                            }
-                            $scope.keyboard = $mdKeyboard.getLayout();
-                            $scope.pressed = triggerKey;
-                        },
+                        template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row" ng-switch=key[0]><span ng-switch-when=Bksp><md-button class="md-raised key-bksp" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon md-svg-icon=hardware:keyboard_backspace></md-icon></md-button></span> <span ng-switch-when=Tab><md-button class="md-raised key-tab" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon md-svg-icon=hardware:keyboard_tab></md-icon></md-button></span> <span ng-switch-when=Caps><md-button class="md-raised key-caps" ng-class="{\'locked\': capsLocked, \'md-focused\': capsLocked}" ng-mousedown="pressed($event, key[0])" ng-click=toggleCapsLock() aria-label={{key[0]}}><md-icon md-svg-icon=hardware:keyboard_capslock></md-icon></md-button></span> <span ng-switch-when=Enter><md-button class="md-raised key-enter" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon md-svg-icon=hardware:keyboard_return></md-icon></md-button></span> <span ng-switch-when=Shift><md-button class="md-raised key-shift" ng-mousedown="pressed($event, key[0]); toggleCaps()" ng-mouseup=toggleCaps() aria-label={{key[0]}}>{{key[0]}}</md-button></span> <span ng-switch-default><md-button class="md-raised key-char" ng-mousedown="pressed($event, key[!capsLocked && !caps ? 0 : 1])" aria-label="{{key[!capsLocked && !caps ? 0 : 1]}}">{{key[!capsLocked && !caps ? 0 : 1]}}</md-button></span></div></div></md-keyboard>',
+                        controller: mdKeyboardController,
                         bindToController: true
                     });
                 }
             }
 
+            function mdKeyboardController($scope) {
+                if (attrs.useKeyboard) {
+                    $mdKeyboard.useLayout(attrs.useKeyboard);
+                }
+
+                var toggleCaps = function() {
+                    $scope.caps = !$scope.caps;
+                };
+
+                var toggleCapsLock = function() {
+                    $scope.capsLocked = !$scope.capsLocked;
+                };
+
+                var _init = function () {
+                    $scope.resolve = function () {
+                        $mdKeyboard.hide('ok');
+                    };
+                    $scope.keyboard = $mdKeyboard.getLayout();
+                    $scope.toggleCaps = toggleCaps;
+                    $scope.toggleCapsLock = toggleCapsLock;
+                    $scope.pressed = triggerKey;
+                };
+
+                _init();
+            }
+
             function triggerKey($event, key) {
                 $event.preventDefault();
+                $log.debug('key pressed: ' + key);
 
-                switch (key[1]) {
+                switch (key) {
                     case "Caps":
                     case "Shift":
                     case "Alt":
@@ -1388,6 +1455,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         // modify input, visualize
                         //self.VKI_modify(type);
                         break;
+
                     case "Tab":
                         // cycle through elements
                         // or insert \t tab
@@ -1411,9 +1479,11 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //return false;
 
                         ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\t");
+                        ngModelCtrl.$validate();
                         ngModelCtrl.$render();
 
                         break;
+
                     case "Bksp":
                         // backspace
                         //self.VKI_target.focus();
@@ -1437,7 +1507,12 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //self.keyInputCallback();
                         //return true;
 
+                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '').slice(0, -1));
+                        ngModelCtrl.$validate();
+                        ngModelCtrl.$render();
+
                         break;
+
                     case "Enter":
                         // submit form or insert \n new line
                         //if (self.VKI_target.nodeName != "TEXTAREA") {
@@ -1452,11 +1527,17 @@ function useKeyboardDirective($mdKeyboard, $injector, $rootScope) {
                         //} else self.VKI_insert("\n");
                         //return true;
 
-                        console.log(ngModelCtrl, element);
-                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\n");
-                        ngModelCtrl.$render();
+                        if (element[0].nodeName.toUpperCase() != 'TEXTAREA') {
+                            scope.$broadcast('$submit');
+                            scope.$root.$broadcast('$submit');
+                        } else {
+                            ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\n");
+                            ngModelCtrl.$validate();
+                            ngModelCtrl.$render();
+                        }
 
                         break;
+
                     default:
                         //var event = new window.KeyboardEvent('keydown', {
                         //    bubbles: true,

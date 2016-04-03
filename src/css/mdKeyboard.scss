@@ -71,6 +71,24 @@ md-keyboard {
     .md-button {
         min-width: 100%;
         text-transform: none;
+
+        &.key-caps {
+            &:before {
+                content: '';
+                position: absolute;
+                top: 5px;
+                left: 5px;
+                display: inline-block;
+                width: 3px;
+                height: 3px;
+                border-radius: 100%;
+                background-color: #ccc;
+            }
+            &.locked:before {
+                background-color: #0f0;
+                box-shadow: 0 0 3px #adff2f;
+            }
+        }
     }
 
     md-inline-icon {

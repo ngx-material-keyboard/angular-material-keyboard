@@ -12,23 +12,62 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     var SYMBOLS = keyboardSymbols;
     var NUMPAD = keyboardNumpad;
 
-    return $$interimElementProvider('$mdKeyboard')
+    var $mdKeyboard = $$interimElementProvider('$mdKeyboard')
         .setDefaults({
             methods: ['themable', 'disableParentScroll', 'clickOutsideToClose', 'layout'],
             options: keyboardDefaults
         })
         .addMethod('getLayout', getLayout)
-        .addMethod('setLayout', setLayout);
+        .addMethod('getLayouts', getLayouts)
+        .addMethod('useLayout', useLayout)
+        .addMethod('addLayout', addLayout);
 
+    // should be available in provider (config phase) not only
+    // in service as defined in $$interimElementProvider
+    $mdKeyboard.getLayout = getLayout;
+    $mdKeyboard.getLayouts = getLayouts;
+    $mdKeyboard.useLayout = useLayout;
+    $mdKeyboard.addLayout = addLayout;
+
+    // get currently used layout object
     function getLayout() {
         return LAYOUTS[LAYOUT];
     }
 
-    function setLayout(layout) {
-        if (LAYOUTS[LAYOUT]) {
+    // get names of available layouts
+    function getLayouts() {
+        var layouts = [];
+        angular.forEach(LAYOUTS, function(obj, layout) {
+            layouts.push(layout);
+        });
+        return layouts;
+    }
+
+    // set name of layout to use
+    function useLayout(layout) {
+        if (LAYOUTS[layout]) {
             LAYOUT = layout;
+        } else {
+            var msg = "" +
+                "The keyboard layout '" + layout + "' does not exists. \n" +
+                "To get a list of the available layouts use 'showLayouts'.";
+            console.warn(msg);
         }
     }
+
+    // add a custom layout
+    function addLayout(layout, keys) {
+        if (!LAYOUTS[layout]) {
+            LAYOUTS[layout] = keys;
+        } else {
+            var msg = "" +
+                "The keyboard layout '" + layout + "' already exists. \n" +
+                "Please use a different name.";
+            console.warn(msg);
+        }
+    }
+
+    return $mdKeyboard;
 
     /* @ngInject */
     function keyboardDefaults($animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $rootElement, $mdGesture) {

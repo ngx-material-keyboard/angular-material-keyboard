@@ -3,7 +3,12 @@
     "email": "postdavidenke.de",
     "name": "David Enke"
   },
-  "dependencies": {},
+  "dependencies": {
+      "angular": "1.4.9",
+      "angular-animate": "1.4.9",
+      "angular-aria": "1.4.9",
+      "angular-material": "1.0.5"
+  },
   "description": "Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/)inspired by the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard).",
   "devDependencies": {
     "bower": "^1.7.7",
@@ -46,7 +51,8 @@
     "url": "git+https://github.com/davidenke/angular-material-keyboard.git"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp build"
   },
   "version": "0.0.1"
 }
