@@ -1404,7 +1404,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
             // open keyboard on focus
             element
                 .bind('focus', showKeyboard)
-                //.bind('blur', hideKeyboard);
+                .bind('blur', hideKeyboard);
 
             function showKeyboard() {
                 if (!keyboard) {
