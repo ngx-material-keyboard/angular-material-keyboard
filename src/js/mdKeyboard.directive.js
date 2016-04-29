@@ -49,7 +49,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
             // open keyboard on focus
             element
                 .bind('focus', showKeyboard)
-                //.bind('blur', hideKeyboard);
+                .bind('blur', hideKeyboard);
 
             function showKeyboard() {
                 if (!keyboard) {
@@ -74,10 +74,31 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                     $scope.capsLocked = !$scope.capsLocked;
                 };
 
+                var getKeyClass = function (key) {
+                    var k = key[0].toLowerCase();
+                    var keys = ['bksp', 'tab', 'caps', 'enter', 'shift', 'alt', 'altgr', 'altlk'];
+
+                    // space bar
+                    if (k == ' ') {
+                        k = 'space';
+                    }
+                    // special key
+                    else if (keys.indexOf(k) < 0) {
+                        k = 'char';
+                    }
+                    // spacer helper element
+                    else if (k == 'spacer') {
+                        return k;
+                    }
+
+                    return 'key-' + k;
+                };
+
                 var _init = function () {
                     $scope.resolve = function () {
                         $mdKeyboard.hide('ok');
                     };
+                    $scope.getKeyClass = getKeyClass;
                     $scope.keyboard = $mdKeyboard.getLayout();
                     $scope.toggleCaps = toggleCaps;
                     $scope.toggleCapsLock = toggleCapsLock;

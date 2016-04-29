@@ -59,10 +59,24 @@ md-keyboard {
   md-keyboard.md-grid {
     padding-left: 24px;
     padding-right: 24px;
-    padding-top: 0; }
+    padding-top: 8px; }
   md-keyboard .layout-row > .flex {
-    border-right: 4px solid transparent;
-    border-left: 4px solid transparent; }
+    border: 4px solid transparent; }
+    md-keyboard .layout-row > .flex:not(.key-char) {
+      width: auto; }
+    md-keyboard .layout-row > .flex.key-bksp, md-keyboard .layout-row > .flex.key-caps {
+      min-width: 15%; }
+    md-keyboard .layout-row > .flex.key-tab, md-keyboard .layout-row > .flex.key-shift, md-keyboard .layout-row > .flex.key-enter {
+      min-width: 10%; }
+    md-keyboard .layout-row > .flex.key-space {
+      text-align: center; }
+      md-keyboard .layout-row > .flex.key-space > span {
+        max-width: 80%; }
+    md-keyboard .layout-row > .flex > span {
+      display: inline-block;
+      width: 100%; }
+      md-keyboard .layout-row > .flex > span .md-button {
+        margin: 0; }
 
 @media screen and (-ms-high-contrast: active) {
   md-keyboard {

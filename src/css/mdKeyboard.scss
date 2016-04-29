@@ -110,12 +110,40 @@ md-keyboard {
     &.md-grid {
         padding-left: 3 * $baseline-grid;
         padding-right: 3 * $baseline-grid;
-        padding-top: 0;
+        padding-top: $baseline-grid;
     }
 
     .layout-row > .flex {
-        border-right: $baseline-grid / 2 solid transparent;
-        border-left: $baseline-grid / 2 solid transparent;
+        border: $baseline-grid / 2 solid transparent;
+
+        &:not(.key-char) {
+            width: auto;
+        }
+        &.key-bksp,
+        &.key-caps {
+            min-width: 15%;
+        }
+        &.key-tab,
+        &.key-shift,
+        &.key-enter {
+            min-width: 10%;
+        }
+        &.key-space {
+            text-align: center;
+
+            & > span {
+                max-width: 80%;
+            }
+        }
+
+        & > span {
+            display: inline-block;
+            width: 100%;
+
+            .md-button {
+                margin: 0;
+            }
+        }
     }
 }
 

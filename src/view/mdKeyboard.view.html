@@ -1,25 +1,25 @@
 <md-keyboard class="md-grid" layout="column" ng-cloak>
     <div ng-repeat="row in keyboard.keys" layout="row">
-        <div flex ng-repeat="key in row" ng-switch="key[0]">
+        <div flex ng-repeat="key in row" ng-switch="key[0]" ng-class="getKeyClass(key)">
             <span ng-switch-when="Bksp">
                 <md-button class="md-raised key-bksp" ng-mousedown="pressed($event, key[0])" aria-label="{{key[0]}}">
-                    <md-icon md-svg-icon="hardware:keyboard_backspace"></md-icon>
+                    <md-icon>keyboard_backspace</md-icon>
                 </md-button>
             </span>
             <span ng-switch-when="Tab">
                 <md-button class="md-raised key-tab" ng-mousedown="pressed($event, key[0])" aria-label="{{key[0]}}">
-                    <md-icon md-svg-icon="hardware:keyboard_tab"></md-icon>
+                    <md-icon>keyboard_tab</md-icon>
                 </md-button>
             </span>
             <span ng-switch-when="Caps">
                 <md-button class="md-raised key-caps" ng-class="{'locked': capsLocked, 'md-focused': capsLocked}" ng-mousedown="pressed($event, key[0])"
                            ng-click="toggleCapsLock()" aria-label="{{key[0]}}">
-                    <md-icon md-svg-icon="hardware:keyboard_capslock"></md-icon>
+                    <md-icon>keyboard_capslock</md-icon>
                 </md-button>
             </span>
             <span ng-switch-when="Enter">
                 <md-button class="md-raised key-enter" ng-mousedown="pressed($event, key[0])" aria-label="{{key[0]}}">
-                    <md-icon md-svg-icon="hardware:keyboard_return"></md-icon>
+                    <md-icon>keyboard_return</md-icon>
                 </md-button>
             </span>
             <span ng-switch-when="Shift">
@@ -27,6 +27,7 @@
                     {{key[0]}}
                 </md-button>
             </span>
+            <span ng-switch-when="Spacer"></span>
             <span ng-switch-default>
                 <md-button class="md-raised key-char" ng-mousedown="pressed($event, key[!capsLocked && !caps ? 0 : 1])" aria-label="{{key[!capsLocked && !caps ? 0 : 1]}}">
                     {{key[!capsLocked && !caps ? 0 : 1]}}

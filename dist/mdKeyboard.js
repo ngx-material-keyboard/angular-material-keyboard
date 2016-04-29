@@ -66,7 +66,7 @@ angular
     .module('material.components.keyboard')
     .config(function ($mdIconProvider) {
         $mdIconProvider
-            .iconSet('hardware', 'svg/hardware-icons.svg', 24);
+            .fontSet('md', 'material-icons');
     });
 
 
@@ -242,8 +242,8 @@ angular
                     [["^", "\u00b0"], ["1", "!"], ["2", '"', "\u00b2"], ["3", "\u00a7", "\u00b3"], ["4", "$"], ["5", "%"], ["6", "&"], ["7", "/", "{"], ["8", "(", "["], ["9", ")", "]"], ["0", "=", "}"], ["\u00df", "?", "\\"], ["\u00b4", "`"], ["Bksp", "Bksp"]],
                     [["Tab", "Tab"], ["q", "Q", "@"], ["w", "W"], ["e", "E", "\u20ac"], ["r", "R"], ["t", "T"], ["z", "Z"], ["u", "U"], ["i", "I"], ["o", "O"], ["p", "P"], ["\u00fc", "\u00dc"], ["+", "*", "~"], ["#", "'"]],
                     [["Caps", "Caps"], ["a", "A"], ["s", "S"], ["d", "D"], ["f", "F"], ["g", "G"], ["h", "H"], ["j", "J"], ["k", "K"], ["l", "L"], ["\u00f6", "\u00d6"], ["\u00e4", "\u00c4"], ["Enter", "Enter"]],
-                    [["Shift", "Shift"], ["<", ">", "\u00a6"], ["y", "Y"], ["x", "X"], ["c", "C"], ["v", "V"], ["b", "B"], ["n", "N"], ["m", "M", "\u00b5"], [",", ";"], [".", ":"], ["-", "_"], ["Shift", "Shift"]],
-                    [[" ", " ", " ", " "], ["AltGr", "AltGr"]]
+                    [["Shift", "Shift"], ["<", ">", "\u00a6"], ["y", "Y"], ["x", "X"], ["c", "C"], ["v", "V"], ["b", "B"], ["n", "N"], ["m", "M", "\u00b5"], [",", ";"], [".", ":"], ["-", "_"], ["AltGr", "AltGr"]],
+                    [[" ", " ", " ", " "]]
                 ], 'lang': ["de"]
             },
             'Dingbats': {
@@ -1404,12 +1404,12 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
             // open keyboard on focus
             element
                 .bind('focus', showKeyboard)
-                //.bind('blur', hideKeyboard);
+                .bind('blur', hideKeyboard);
 
             function showKeyboard() {
                 if (!keyboard) {
                     keyboard = $mdKeyboard.show({
-                        template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row" ng-switch=key[0]><span ng-switch-when=Bksp><md-button class="md-raised key-bksp" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon md-svg-icon=hardware:keyboard_backspace></md-icon></md-button></span> <span ng-switch-when=Tab><md-button class="md-raised key-tab" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon md-svg-icon=hardware:keyboard_tab></md-icon></md-button></span> <span ng-switch-when=Caps><md-button class="md-raised key-caps" ng-class="{\'locked\': capsLocked, \'md-focused\': capsLocked}" ng-mousedown="pressed($event, key[0])" ng-click=toggleCapsLock() aria-label={{key[0]}}><md-icon md-svg-icon=hardware:keyboard_capslock></md-icon></md-button></span> <span ng-switch-when=Enter><md-button class="md-raised key-enter" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon md-svg-icon=hardware:keyboard_return></md-icon></md-button></span> <span ng-switch-when=Shift><md-button class="md-raised key-shift" ng-mousedown="pressed($event, key[0]); toggleCaps()" ng-mouseup=toggleCaps() aria-label={{key[0]}}>{{key[0]}}</md-button></span> <span ng-switch-default><md-button class="md-raised key-char" ng-mousedown="pressed($event, key[!capsLocked && !caps ? 0 : 1])" aria-label="{{key[!capsLocked && !caps ? 0 : 1]}}">{{key[!capsLocked && !caps ? 0 : 1]}}</md-button></span></div></div></md-keyboard>',
+                        template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row" ng-switch=key[0] ng-class=getKeyClass(key)><span ng-switch-when=Bksp><md-button class="md-raised key-bksp" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_backspace</md-icon></md-button></span> <span ng-switch-when=Tab><md-button class="md-raised key-tab" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_tab</md-icon></md-button></span> <span ng-switch-when=Caps><md-button class="md-raised key-caps" ng-class="{\'locked\': capsLocked, \'md-focused\': capsLocked}" ng-mousedown="pressed($event, key[0])" ng-click=toggleCapsLock() aria-label={{key[0]}}><md-icon>keyboard_capslock</md-icon></md-button></span> <span ng-switch-when=Enter><md-button class="md-raised key-enter" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_return</md-icon></md-button></span> <span ng-switch-when=Shift><md-button class="md-raised key-shift" ng-mousedown="pressed($event, key[0]); toggleCaps()" ng-mouseup=toggleCaps() aria-label={{key[0]}}>{{key[0]}}</md-button></span> <span ng-switch-when=Spacer></span> <span ng-switch-default><md-button class="md-raised key-char" ng-mousedown="pressed($event, key[!capsLocked && !caps ? 0 : 1])" aria-label="{{key[!capsLocked && !caps ? 0 : 1]}}">{{key[!capsLocked && !caps ? 0 : 1]}}</md-button></span></div></div></md-keyboard>',
                         controller: mdKeyboardController,
                         bindToController: true
                     });
@@ -1429,10 +1429,31 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                     $scope.capsLocked = !$scope.capsLocked;
                 };
 
+                var getKeyClass = function (key) {
+                    var k = key[0].toLowerCase();
+                    var keys = ['bksp', 'tab', 'caps', 'enter', 'shift', 'alt', 'altgr', 'altlk'];
+
+                    // space bar
+                    if (k == ' ') {
+                        k = 'space';
+                    }
+                    // special key
+                    else if (keys.indexOf(k) < 0) {
+                        k = 'char';
+                    }
+                    // spacer helper element
+                    else if (k == 'spacer') {
+                        return k;
+                    }
+
+                    return 'key-' + k;
+                };
+
                 var _init = function () {
                     $scope.resolve = function () {
                         $mdKeyboard.hide('ok');
                     };
+                    $scope.getKeyClass = getKeyClass;
                     $scope.keyboard = $mdKeyboard.getLayout();
                     $scope.toggleCaps = toggleCaps;
                     $scope.toggleCapsLock = toggleCapsLock;

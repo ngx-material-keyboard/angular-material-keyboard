@@ -68,10 +68,6 @@ gulp.task('build', function () {
         .src('src/css/*.scss')
         .pipe(plugins.sass().on('error', plugins.sass.logError))
         .pipe(gulp.dest('./dist/'));
-
-    gulp
-        .src('src/svg/*')
-        .pipe(gulp.dest('./dist/'));
 });
 
 gulp.task('default', ['jshint', 'build'], function () {
