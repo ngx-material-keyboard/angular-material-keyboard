@@ -7,7 +7,8 @@
       "angular": "1.4.9",
       "angular-animate": "1.4.9",
       "angular-aria": "1.4.9",
-      "angular-material": "1.0.5"
+      "angular-material": "1.0.5",
+      "material-design-icons": "2.2.3"
   },
   "description": "Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/)inspired by the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard).",
   "devDependencies": {
