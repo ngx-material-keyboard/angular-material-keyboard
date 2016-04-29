@@ -217,6 +217,8 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                         ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + key[0]);
                         ngModelCtrl.$validate();
                         ngModelCtrl.$render();
+                        
+                        $scope.caps = false;
                 }
             }
 
