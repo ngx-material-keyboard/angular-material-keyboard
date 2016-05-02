@@ -1167,8 +1167,9 @@ angular
     .module('material.components.keyboard')
     .provider('$mdKeyboard', MdKeyboardProvider);
 
-function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
+function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
     // how fast we need to flick down to close the sheet, pixels/ms
+    var SCOPE;
     var CLOSING_VELOCITY = 0.5;
     var PADDING = 80; // same as css
     var LAYOUT = 'US International';
@@ -1176,6 +1177,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     var DEADKEY = keyboardDeadkey;
     var SYMBOLS = keyboardSymbols;
     var NUMPAD = keyboardNumpad;
+    var VISIBLE = false;
 
     var $mdKeyboard = $$interimElementProvider('$mdKeyboard')
         .setDefaults({
@@ -1185,7 +1187,8 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
         .addMethod('getLayout', getLayout)
         .addMethod('getLayouts', getLayouts)
         .addMethod('useLayout', useLayout)
-        .addMethod('addLayout', addLayout);
+        .addMethod('addLayout', addLayout)
+        .addMethod('isVisible', isVisible);
 
     // should be available in provider (config phase) not only
     // in service as defined in $$interimElementProvider
@@ -1193,6 +1196,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     $mdKeyboard.getLayouts = getLayouts;
     $mdKeyboard.useLayout = useLayout;
     $mdKeyboard.addLayout = addLayout;
+    $mdKeyboard.isVisible = isVisible;
 
     // get currently used layout object
     function getLayout() {
@@ -1202,7 +1206,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     // get names of available layouts
     function getLayouts() {
         var layouts = [];
-        angular.forEach(LAYOUTS, function(obj, layout) {
+        angular.forEach(LAYOUTS, function (obj, layout) {
             layouts.push(layout);
         });
         return layouts;
@@ -1212,6 +1216,12 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     function useLayout(layout) {
         if (LAYOUTS[layout]) {
             LAYOUT = layout;
+            if (SCOPE) {
+                SCOPE.$broadcast('$mdKeyboardLayoutChanged', layout);
+            }
+            //console.log($injector.get('$rootScope'), $injector.get('$scope'));
+            //$rootScope = $injector.get('$rootScope');
+            //$rootScope.$broadcast('$mdKeyboardLayoutChanged', layout);
         } else {
             var msg = "" +
                 "The keyboard layout '" + layout + "' does not exists. \n" +
@@ -1230,6 +1240,11 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                 "Please use a different name.";
             console.warn(msg);
         }
+    }
+
+    // return if keyboard is visible
+    function isVisible() {
+        return VISIBLE;
     }
 
     return $mdKeyboard;
@@ -1263,6 +1278,9 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
             options.keyboard = keyboard;
             options.parent.prepend(keyboard.element);
 
+            SCOPE = scope;
+            VISIBLE = true;
+
             $mdTheming.inherit(keyboard.element, options.parent);
 
             if (options.disableParentScroll) {
@@ -1291,6 +1309,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                 if (options.disableParentScroll) {
                     options.restoreScroll();
                     delete options.restoreScroll;
+                    VISIBLE = false;
                 }
 
                 keyboard.cleanup();
@@ -1374,7 +1393,7 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
+function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
@@ -1407,12 +1426,24 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                 .bind('blur', hideKeyboard);
 
             function showKeyboard() {
-                if (!keyboard) {
-                    keyboard = $mdKeyboard.show({
-                        template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row" ng-switch=key[0] ng-class=getKeyClass(key)><span ng-switch-when=Bksp><md-button class="md-raised key-bksp" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_backspace</md-icon></md-button></span> <span ng-switch-when=Tab><md-button class="md-raised key-tab" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_tab</md-icon></md-button></span> <span ng-switch-when=Caps><md-button class="md-raised key-caps" ng-class="{\'locked\': capsLocked, \'md-focused\': capsLocked}" ng-mousedown="pressed($event, key[0])" ng-click=toggleCapsLock() aria-label={{key[0]}}><md-icon>keyboard_capslock</md-icon></md-button></span> <span ng-switch-when=Enter><md-button class="md-raised key-enter" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_return</md-icon></md-button></span> <span ng-switch-when=Shift><md-button class="md-raised key-shift" ng-mousedown="pressed($event, key[0]); toggleCaps()" ng-mouseup=toggleCaps() aria-label={{key[0]}}>{{key[0]}}</md-button></span> <span ng-switch-when=Spacer></span> <span ng-switch-default><md-button class="md-raised key-char" ng-mousedown="pressed($event, key[!capsLocked && !caps ? 0 : 1])" aria-label="{{key[!capsLocked && !caps ? 0 : 1]}}">{{key[!capsLocked && !caps ? 0 : 1]}}</md-button></span></div></div></md-keyboard>',
+                if ($rootScope.keyboardTimeout) {
+                    $timeout.cancel($rootScope.keyboardTimeout);
+                }
+
+                // no keyboard active, so add new
+                if (!$mdKeyboard.isVisible()) {
+                    $mdKeyboard.currentModel = ngModelCtrl;
+                    $mdKeyboard.show({
+                        template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row" ng-switch=key[0] ng-class=getKeyClass(key)><span ng-switch-when=Bksp><md-button class="md-raised key-bksp" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_backspace</md-icon></md-button></span> <span ng-switch-when=Tab><md-button class="md-raised key-tab" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_tab</md-icon></md-button></span> <span ng-switch-when=Caps><md-button class="md-raised key-caps" ng-class="{\'locked\': capsLocked, \'md-focused\': capsLocked}" ng-mousedown="pressed($event, key[0])" ng-click=toggleCapsLock() aria-label={{key[0]}}><md-icon>keyboard_capslock</md-icon></md-button></span> <span ng-switch-when=Enter><md-button class="md-raised key-enter" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_return</md-icon></md-button></span> <span ng-switch-when=Shift><md-button class="md-raised key-shift" ng-mousedown="pressed($event, key[0]); toggleCaps()" aria-label={{key[0]}}>{{key[0]}}</md-button></span> <span ng-switch-when=Spacer></span> <span ng-switch-default><md-button class="md-raised key-char" ng-mousedown="pressed($event, key[!capsLocked && !caps ? 0 : 1])" aria-label="{{key[!capsLocked && !caps ? 0 : 1]}}">{{key[!capsLocked && !caps ? 0 : 1]}}</md-button></span></div></div></md-keyboard>',
                         controller: mdKeyboardController,
                         bindToController: true
                     });
+                }
+
+                // use existing keyboard
+                else {
+                    $mdKeyboard.currentModel = ngModelCtrl;
+                    $mdKeyboard.useLayout(attrs.useKeyboard);
                 }
             }
 
@@ -1421,11 +1452,11 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                     $mdKeyboard.useLayout(attrs.useKeyboard);
                 }
 
-                var toggleCaps = function() {
+                var toggleCaps = function () {
                     $scope.caps = !$scope.caps;
                 };
 
-                var toggleCapsLock = function() {
+                var toggleCapsLock = function () {
                     $scope.capsLocked = !$scope.capsLocked;
                 };
 
@@ -1458,10 +1489,27 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                     $scope.toggleCaps = toggleCaps;
                     $scope.toggleCapsLock = toggleCapsLock;
                     $scope.pressed = triggerKey;
+
+                    $scope.$on('$mdKeyboardLayoutChanged', function () {
+                        $scope.keyboard = $mdKeyboard.getLayout();
+                        $scope.pressed = triggerKey;
+                    });
                 };
 
                 _init();
             }
+
+            function _getCaretPosition() {
+                if ('selectionStart' in element) {
+                    return element.selectionStart;
+                } else if (document.selection) {
+                    element.focus();
+                    var sel = document.selection.createRange();
+                    var selLen = document.selection.createRange().text.length;
+                    sel.moveStart('character', -element.value.length);
+                    return sel.text.length - selLen;
+                }
+            };
 
             function triggerKey($event, key) {
                 $event.preventDefault();
@@ -1499,9 +1547,9 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                         //} else self.VKI_insert("\t");
                         //return false;
 
-                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\t");
-                        ngModelCtrl.$validate();
-                        ngModelCtrl.$render();
+                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\t");
+                        $mdKeyboard.currentModel.$validate();
+                        $mdKeyboard.currentModel.$render();
 
                         break;
 
@@ -1528,9 +1576,9 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                         //self.keyInputCallback();
                         //return true;
 
-                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '').slice(0, -1));
-                        ngModelCtrl.$validate();
-                        ngModelCtrl.$render();
+                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '').slice(0, -1));
+                        $mdKeyboard.currentModel.$validate();
+                        $mdKeyboard.currentModel.$render();
 
                         break;
 
@@ -1552,9 +1600,9 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                             scope.$broadcast('$submit');
                             scope.$root.$broadcast('$submit');
                         } else {
-                            ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\n");
-                            ngModelCtrl.$validate();
-                            ngModelCtrl.$render();
+                            $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\n");
+                            $mdKeyboard.currentModel.$validate();
+                            $mdKeyboard.currentModel.$render();
                         }
 
                         break;
@@ -1568,17 +1616,22 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                         //});
                         //element[0].dispatchEvent(event);
 
-                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + key[0]);
-                        ngModelCtrl.$validate();
-                        ngModelCtrl.$render();
+                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + key[0]);
+                        $mdKeyboard.currentModel.$validate();
+                        $mdKeyboard.currentModel.$render();
+
+                        scope.caps = false;
                 }
             }
 
             function hideKeyboard() {
-                if (keyboard) {
-                    $mdKeyboard.hide();
-                    keyboard = undefined;
+                if ($rootScope.keyboardTimeout) {
+                    $timeout.cancel($rootScope.keyboardTimeout);
                 }
+                //keyboard.hide();
+                $rootScope.keyboardTimeout = $timeout(function () {
+                    $mdKeyboard.hide();
+                }, 500);
             }
         }
     }

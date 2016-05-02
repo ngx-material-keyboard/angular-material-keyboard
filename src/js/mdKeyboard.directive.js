@@ -17,7 +17,7 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
+function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
@@ -52,12 +52,24 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                 .bind('blur', hideKeyboard);
 
             function showKeyboard() {
-                if (!keyboard) {
-                    keyboard = $mdKeyboard.show({
+                if ($rootScope.keyboardTimeout) {
+                    $timeout.cancel($rootScope.keyboardTimeout);
+                }
+
+                // no keyboard active, so add new
+                if (!$mdKeyboard.isVisible()) {
+                    $mdKeyboard.currentModel = ngModelCtrl;
+                    $mdKeyboard.show({
                         templateUrl: '../view/mdKeyboard.view.html',
                         controller: mdKeyboardController,
                         bindToController: true
                     });
+                }
+
+                // use existing keyboard
+                else {
+                    $mdKeyboard.currentModel = ngModelCtrl;
+                    $mdKeyboard.useLayout(attrs.useKeyboard);
                 }
             }
 
@@ -66,11 +78,11 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                     $mdKeyboard.useLayout(attrs.useKeyboard);
                 }
 
-                var toggleCaps = function() {
+                var toggleCaps = function () {
                     $scope.caps = !$scope.caps;
                 };
 
-                var toggleCapsLock = function() {
+                var toggleCapsLock = function () {
                     $scope.capsLocked = !$scope.capsLocked;
                 };
 
@@ -103,10 +115,27 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                     $scope.toggleCaps = toggleCaps;
                     $scope.toggleCapsLock = toggleCapsLock;
                     $scope.pressed = triggerKey;
+
+                    $scope.$on('$mdKeyboardLayoutChanged', function () {
+                        $scope.keyboard = $mdKeyboard.getLayout();
+                        $scope.pressed = triggerKey;
+                    });
                 };
 
                 _init();
             }
+
+            function _getCaretPosition() {
+                if ('selectionStart' in element) {
+                    return element.selectionStart;
+                } else if (document.selection) {
+                    element.focus();
+                    var sel = document.selection.createRange();
+                    var selLen = document.selection.createRange().text.length;
+                    sel.moveStart('character', -element.value.length);
+                    return sel.text.length - selLen;
+                }
+            };
 
             function triggerKey($event, key) {
                 $event.preventDefault();
@@ -144,9 +173,9 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                         //} else self.VKI_insert("\t");
                         //return false;
 
-                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\t");
-                        ngModelCtrl.$validate();
-                        ngModelCtrl.$render();
+                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\t");
+                        $mdKeyboard.currentModel.$validate();
+                        $mdKeyboard.currentModel.$render();
 
                         break;
 
@@ -173,9 +202,9 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                         //self.keyInputCallback();
                         //return true;
 
-                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '').slice(0, -1));
-                        ngModelCtrl.$validate();
-                        ngModelCtrl.$render();
+                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '').slice(0, -1));
+                        $mdKeyboard.currentModel.$validate();
+                        $mdKeyboard.currentModel.$render();
 
                         break;
 
@@ -198,9 +227,9 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                             scope.$broadcast('$submit');
                             scope.$root.$broadcast('$submit');
                         } else {
-                            ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + "\n");
-                            ngModelCtrl.$validate();
-                            ngModelCtrl.$render();
+                            $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\n");
+                            $mdKeyboard.currentModel.$validate();
+                            $mdKeyboard.currentModel.$render();
                         }
 
                         break;
@@ -214,19 +243,22 @@ function useKeyboardDirective($mdKeyboard, $injector, $log, $rootScope) {
                         //});
                         //element[0].dispatchEvent(event);
 
-                        ngModelCtrl.$setViewValue((ngModelCtrl.$viewValue || '') + key[0]);
-                        ngModelCtrl.$validate();
-                        ngModelCtrl.$render();
-                        
-                        $scope.caps = false;
+                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + key[0]);
+                        $mdKeyboard.currentModel.$validate();
+                        $mdKeyboard.currentModel.$render();
+
+                        scope.caps = false;
                 }
             }
 
             function hideKeyboard() {
-                if (keyboard) {
-                    $mdKeyboard.hide();
-                    keyboard = undefined;
+                if ($rootScope.keyboardTimeout) {
+                    $timeout.cancel($rootScope.keyboardTimeout);
                 }
+                //keyboard.hide();
+                $rootScope.keyboardTimeout = $timeout(function () {
+                    $mdKeyboard.hide();
+                }, 500);
             }
         }
     }

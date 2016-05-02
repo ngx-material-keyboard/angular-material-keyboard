@@ -2,8 +2,9 @@ angular
     .module('material.components.keyboard')
     .provider('$mdKeyboard', MdKeyboardProvider);
 
-function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
+function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
     // how fast we need to flick down to close the sheet, pixels/ms
+    var SCOPE;
     var CLOSING_VELOCITY = 0.5;
     var PADDING = 80; // same as css
     var LAYOUT = 'US International';
@@ -11,6 +12,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     var DEADKEY = keyboardDeadkey;
     var SYMBOLS = keyboardSymbols;
     var NUMPAD = keyboardNumpad;
+    var VISIBLE = false;
 
     var $mdKeyboard = $$interimElementProvider('$mdKeyboard')
         .setDefaults({
@@ -20,7 +22,8 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
         .addMethod('getLayout', getLayout)
         .addMethod('getLayouts', getLayouts)
         .addMethod('useLayout', useLayout)
-        .addMethod('addLayout', addLayout);
+        .addMethod('addLayout', addLayout)
+        .addMethod('isVisible', isVisible);
 
     // should be available in provider (config phase) not only
     // in service as defined in $$interimElementProvider
@@ -28,6 +31,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     $mdKeyboard.getLayouts = getLayouts;
     $mdKeyboard.useLayout = useLayout;
     $mdKeyboard.addLayout = addLayout;
+    $mdKeyboard.isVisible = isVisible;
 
     // get currently used layout object
     function getLayout() {
@@ -37,7 +41,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     // get names of available layouts
     function getLayouts() {
         var layouts = [];
-        angular.forEach(LAYOUTS, function(obj, layout) {
+        angular.forEach(LAYOUTS, function (obj, layout) {
             layouts.push(layout);
         });
         return layouts;
@@ -47,6 +51,12 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     function useLayout(layout) {
         if (LAYOUTS[layout]) {
             LAYOUT = layout;
+            if (SCOPE) {
+                SCOPE.$broadcast('$mdKeyboardLayoutChanged', layout);
+            }
+            //console.log($injector.get('$rootScope'), $injector.get('$scope'));
+            //$rootScope = $injector.get('$rootScope');
+            //$rootScope.$broadcast('$mdKeyboardLayoutChanged', layout);
         } else {
             var msg = "" +
                 "The keyboard layout '" + layout + "' does not exists. \n" +
@@ -65,6 +75,11 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                 "Please use a different name.";
             console.warn(msg);
         }
+    }
+
+    // return if keyboard is visible
+    function isVisible() {
+        return VISIBLE;
     }
 
     return $mdKeyboard;
@@ -98,6 +113,9 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
             options.keyboard = keyboard;
             options.parent.prepend(keyboard.element);
 
+            SCOPE = scope;
+            VISIBLE = true;
+
             $mdTheming.inherit(keyboard.element, options.parent);
 
             if (options.disableParentScroll) {
@@ -126,6 +144,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                 if (options.disableParentScroll) {
                     options.restoreScroll();
                     delete options.restoreScroll;
+                    VISIBLE = false;
                 }
 
                 keyboard.cleanup();
