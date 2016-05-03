@@ -32,7 +32,7 @@ angular
 ```
 
 ## configure
-Use the `mdKeyboardProvider` to set your default ylaout or to add custom layouts:
+Use the `mdKeyboardProvider` to set your default layout or to add custom layouts:
 ```javascript
 'use strict';
 
@@ -71,5 +71,5 @@ The `$mdKeyboardProvider` has the following methods:
 
 ## build
 * install node.js (I recomend to use [nvm](https://github.com/creationix/nvm))
-* get dependencies: ```npm install && bower install```
-* build with gulp task: ```gulp build```
+* get dependencies: `$ npm install && bower install`
+* build with gulp task: `$ gulp build`
