@@ -17,7 +17,7 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope) {
+function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
@@ -55,11 +55,14 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope
                 if ($rootScope.keyboardTimeout) {
                     $timeout.cancel($rootScope.keyboardTimeout);
                 }
+                if ($rootScope.keyboardAnimation) {
+                    $animate.cancel($rootScope.keyboardAnimation);
+                }
 
                 // no keyboard active, so add new
                 if (!$mdKeyboard.isVisible()) {
                     $mdKeyboard.currentModel = ngModelCtrl;
-                    $mdKeyboard.show({
+                    $rootScope.keyboardAnimation = $mdKeyboard.show({
                         templateUrl: '../view/mdKeyboard.view.html',
                         controller: mdKeyboardController,
                         bindToController: true
@@ -139,7 +142,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope
 
             function triggerKey($event, key) {
                 $event.preventDefault();
-                $log.debug('key pressed: ' + key);
+                $log.info('key pressed: %s (%s)', key, key.charCodeAt(0));
 
                 switch (key) {
                     case "Caps":
@@ -152,6 +155,8 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope
                         break;
 
                     case "Tab":
+                        // TODO: handle text selection
+
                         // cycle through elements
                         // or insert \t tab
                         //if (self.VKI_activeTab) {
@@ -180,6 +185,8 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope
                         break;
 
                     case "Bksp":
+                        // TODO: handle text selection
+
                         // backspace
                         //self.VKI_target.focus();
                         //if (self.VKI_target.setSelectionRange && hasSelectionStartEnd(self.VKI_target) && !self.VKI_target.readOnly) {
@@ -209,23 +216,10 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope
                         break;
 
                     case "Enter":
-                        // submit form or insert \n new line
-                        //if (self.VKI_target.nodeName != "TEXTAREA") {
-                        //    if (typeof self.VKI_enterSubmit === 'function') {
-                        //        self.VKI_enterSubmit.apply({}, [self.VKI_target.value]);
-                        //    } else if (self.VKI_enterSubmit && self.VKI_target.form) {
-                        //        for (var z = 0, subm = false; z < self.VKI_target.form.elements.length; z++)
-                        //            if (self.VKI_target.form.elements[z].type == "submit") subm = true;
-                        //        if (!subm) self.VKI_target.form.submit();
-                        //    }
-                        //    self.VKI_close(false);
-                        //} else self.VKI_insert("\n");
-                        //return true;
-
                         if (element[0].nodeName.toUpperCase() != 'TEXTAREA') {
-                            // TODO: Trigger form submit
-                            scope.$broadcast('$submit');
-                            scope.$root.$broadcast('$submit');
+                            $timeout(function () {
+                                angular.element(element[0].form).triggerHandler('submit');
+                            });
                         } else {
                             $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\n");
                             $mdKeyboard.currentModel.$validate();
@@ -235,13 +229,17 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope
                         break;
 
                     default:
-                        //var event = new window.KeyboardEvent('keydown', {
+                        // TODO: handle text selection
+
+                        //$timeout(function () {
+                        //var event = new window.KeyboardEvent('keypress', {
                         //    bubbles: true,
                         //    cancelable: true,
                         //    shiftKey: true,
-                        //    keyCode: key[0].charCodeAt(0)
+                        //    keyCode: key.charCodeAt(0)
                         //});
-                        //element[0].dispatchEvent(event);
+                        // element[0].dispatchEvent(event);
+                        //});
 
                         $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + key[0]);
                         $mdKeyboard.currentModel.$validate();
@@ -255,9 +253,8 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $log, $rootScope
                 if ($rootScope.keyboardTimeout) {
                     $timeout.cancel($rootScope.keyboardTimeout);
                 }
-                //keyboard.hide();
                 $rootScope.keyboardTimeout = $timeout(function () {
-                    $mdKeyboard.hide();
+                    $rootScope.keyboardAnimation = $mdKeyboard.hide();
                 }, 500);
             }
         }

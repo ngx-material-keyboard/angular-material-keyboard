@@ -122,7 +122,8 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
                 options.restoreScroll = $mdUtil.disableScrollAround(keyboard.element, options.parent);
             }
 
-            return $animate.enter(keyboard.element, options.parent)
+            return $animate
+                .enter(keyboard.element, options.parent)
                 .then(function () {
                     if (options.escapeToClose) {
                         options.rootElementKeyupCallback = function (e) {
@@ -137,18 +138,20 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
         }
 
         function onRemove(scope, element, options) {
-
             var keyboard = options.keyboard;
 
-            return $animate.leave(keyboard.element).then(function () {
-                if (options.disableParentScroll) {
-                    options.restoreScroll();
-                    delete options.restoreScroll;
+            return $animate
+                .leave(keyboard.element)
+                .then(function () {
                     VISIBLE = false;
-                }
 
-                keyboard.cleanup();
-            });
+                    if (options.disableParentScroll) {
+                        options.restoreScroll();
+                        delete options.restoreScroll;
+                    }
+
+                    keyboard.cleanup();
+                });
         }
 
         /**
