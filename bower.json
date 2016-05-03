@@ -9,13 +9,13 @@
     "dist/mdKeyboard.css"
   ],
   "keywords": [
-      "Angular",
-      "Material",
-      "Angular Material Design",
-      "Onscreen",
-      "Keyboard",
-      "VKI",
-      "Virtual"
+    "Angular",
+    "Material",
+    "Angular Material Design",
+    "Onscreen",
+    "Keyboard",
+    "VKI",
+    "Virtual"
   ],
   "license": "MIT",
   "ignore": [
@@ -26,8 +26,11 @@
     "src",
     "gulpfile.js"
   ],
-  "dependencies": {},
-  "devDependencies": {
-    "angular-useragent-parser": "~0.1.0"
-  }
+  "dependencies": {
+    "angular": "^1.4.0",
+    "angular-material": "^1.0.0",
+    "angular-useragent-parser": "~0.1.0",
+    "material-design-icons": "^2.2.3"
+  },
+  "devDependencies": {}
 }

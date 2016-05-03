@@ -45,6 +45,7 @@ gulp.task('build', function () {
     gulp
         .src([
             'src/js/mdKeyboard.module.js',
+            'src/js/mdKeyboard.config.icons.js',
             'src/js/mdKeyboard.config.layouts.js',
             'src/js/mdKeyboard.config.deadkey.js',
             'src/js/mdKeyboard.config.numpad.js',
@@ -57,12 +58,15 @@ gulp.task('build', function () {
         .pipe(plugins.footer(footer))
         .pipe(plugins.embedTemplates())
         .pipe(plugins.replace(/[\r\n]+\s*\/\/.*TODO:+.*/gi, ''))
+//      .pipe(plugins.replace(/angular\s*\.module\('material\.components\.keyboard'\)\n/gi, ''))
         .pipe(gulp.dest('./dist/'))
         .pipe(plugins.uglify())
         .pipe(plugins.concat('mdKeyboard.min.js'))
         .pipe(gulp.dest('./dist/'));
 
-    gulp.src('src/css/mdKeyboard.css')
+    gulp
+        .src('src/css/*.scss')
+        .pipe(plugins.sass().on('error', plugins.sass.logError))
         .pipe(gulp.dest('./dist/'));
 });
 

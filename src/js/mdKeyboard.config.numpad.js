@@ -1,5 +1,5 @@
 angular
-    .module('mdKeyboard')
+    .module('material.components.keyboard')
     .constant('keyboardNumpad', [
         [["$"], ["\u00a3"], ["\u20ac"], ["\u00a5"]],
         [["7"], ["8"], ["9"], ["/"]],
