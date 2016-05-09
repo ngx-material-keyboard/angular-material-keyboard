@@ -56,6 +56,9 @@
  *
  */
 
+MdKeyboardProvider.$inject = ["$$interimElementProvider", "$injector", "keyboardLayouts", "keyboardDeadkey", "keyboardSymbols", "keyboardNumpad"];
+MdKeyboardDirective.$inject = ["$mdKeyboard", "$mdTheming"];
+useKeyboardDirective.$inject = ["$mdKeyboard", "$injector", "$timeout", "$animate", "$log", "$rootScope"];
 angular
     .module('material.components.keyboard', [
         'material.core',
@@ -64,10 +67,10 @@ angular
 
 angular
     .module('material.components.keyboard')
-    .config(function ($mdIconProvider) {
+    .config(["$mdIconProvider", function ($mdIconProvider) {
         $mdIconProvider
             .fontSet('md', 'material-icons');
-    });
+    }]);
 
 
 /* See http://www.greywyvern.com/code/javascript/keyboard for examples
@@ -1169,6 +1172,7 @@ angular
 
 function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
     // how fast we need to flick down to close the sheet, pixels/ms
+    keyboardDefaults.$inject = ["$animate", "$mdConstant", "$mdUtil", "$mdTheming", "$mdKeyboard", "$rootElement", "$mdGesture"];
     var SCOPE;
     var CLOSING_VELOCITY = 0.5;
     var PADDING = 80; // same as css

@@ -59,6 +59,7 @@ gulp.task('build', function () {
         .pipe(plugins.embedTemplates())
         .pipe(plugins.replace(/[\r\n]+\s*\/\/.*TODO:+.*/gi, ''))
 //      .pipe(plugins.replace(/angular\s*\.module\('material\.components\.keyboard'\)\n/gi, ''))
+        .pipe(plugins.ngAnnotate())
         .pipe(gulp.dest('./dist/'))
         .pipe(plugins.uglify())
         .pipe(plugins.concat('mdKeyboard.min.js'))
