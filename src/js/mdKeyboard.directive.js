@@ -6,7 +6,7 @@ angular
 function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     return {
         restrict: 'E',
-        link: function postLink(scope, element, attr) {
+        link: function postLink(scope, element) {
             $mdTheming(element);
             // When navigation force destroys an interimElement, then
             // listen and $destroy() that interim instance...
@@ -17,7 +17,7 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, $rootScope) {
+function useKeyboardDirective($mdKeyboard, $timeout, $animate, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
