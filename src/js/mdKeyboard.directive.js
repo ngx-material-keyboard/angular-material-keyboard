@@ -201,11 +201,11 @@ function useKeyboardDirective($mdKeyboard, $timeout, $animate, $rootScope) {
                         $mdKeyboard.hide('ok');
                     };
                     $scope.getKeyClass = getKeyClass;
-                    $scope.keyboard = $mdKeyboard.getCurrentLayout();
+                    $scope.keyboard = $mdKeyboard.getLayout($mdKeyboard.getCurrentLayout());
                     $scope.pressed = triggerKey;
 
-                    $scope.$on('$mdKeyboardLayoutChanged', function () {
-                        $scope.keyboard = $mdKeyboard.getCurrentLayout();
+                    $scope.$on('$mdKeyboardLayoutChanged', function ($event, layout) {
+                        $scope.keyboard = $mdKeyboard.getLayout(layout);
                         $scope.$apply();
                     });
                 };
