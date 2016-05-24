@@ -58,16 +58,20 @@ gulp.task('build', function () {
         .pipe(plugins.footer(footer))
         .pipe(plugins.embedTemplates())
         .pipe(plugins.replace(/[\r\n]+\s*\/\/.*TODO:+.*/gi, ''))
-//      .pipe(plugins.replace(/angular\s*\.module\('material\.components\.keyboard'\)\n/gi, ''))
         .pipe(plugins.ngAnnotate())
         .pipe(gulp.dest('./dist/'))
-        .pipe(plugins.uglify())
+        .pipe(plugins.uglify({mangle: false}))
         .pipe(plugins.concat('mdKeyboard.min.js'))
         .pipe(gulp.dest('./dist/'));
 
     gulp
         .src('src/css/*.scss')
         .pipe(plugins.sass().on('error', plugins.sass.logError))
+        .pipe(gulp.dest('./dist/'))
+        .pipe(plugins.concat('mdKeyboard.min.css'))
+        .pipe(plugins.sourcemaps.init())
+        .pipe(plugins.cleanCss())
+        .pipe(plugins.sourcemaps.write())
         .pipe(gulp.dest('./dist/'));
 });
 
