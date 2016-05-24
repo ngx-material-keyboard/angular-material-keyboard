@@ -1,0 +1,65 @@
+<html data-ng-app="keyboardDemoApp">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Material+Icons|Open+Sans:400,300,600,700|Open+Sans+Condensed:300,700">
+        <link rel="stylesheet" href="node_modules/angular-material/angular-material.min.css">
+        <link rel="stylesheet" href="dist/mdKeyboard.min.css">
+    </head>
+    <body ng-cloak data-ng-controller="keyboardDemoCtrl">
+        <div layout-padding>
+            <h1 class="md-headline">Angular Material Keyboard Demo</h1>
+            <section layout="row">
+                <md-input-container flex>
+                    <label>Use default keyboard</label>
+                    <input type="text" class="md-input" ng-model="text" use-keyboard>
+                </md-input-container>
+                <md-input-container flex>
+                    <label>Use custom keyboard</label>
+                    <input type="number" class="md-input" ng-model="numbers" use-keyboard="Numbers">
+                </md-input-container>
+            </section>
+        </div>
+
+        <script src="node_modules/angular/angular.min.js"></script>
+        <script src="node_modules/angular-aria/angular-aria.min.js"></script>
+        <script src="node_modules/angular-animate/angular-animate.min.js"></script>
+        <script src="node_modules/angular-material/angular-material.min.js"></script>
+        <script src="dist/mdKeyboard.js"></script>
+
+        <script>
+            'use strict';
+
+            angular
+                .module('keyboardDemoApp', [
+                    'ngAnimate',
+                    'ngAria',
+                    'ngMaterial',
+                    'material.components.keyboard'
+                    //'ngMessages',
+                    //'ngSanitize',
+                ])
+                .config(function ($mdKeyboardProvider) {
+                    // add custom layout for numbers
+                    $mdKeyboardProvider.addLayout('Numbers', {
+                        'name': 'Numbers', 'keys': [
+                            [['7', '7'], ['8', '8'], ['9', '9'], ['Bksp', 'Bksp']],
+                            [['4', '4'], ['5', '5'], ['6', '6'], ['-', '-']],
+                            [['1', '1'], ['2', '2'], ['3', '3'], ['+', '+']],
+                            [['0', '0'], ['Spacer'], [','], ['Enter', 'Enter']]
+                        ], 'lang': ['de']
+                    });
+
+                    // default layout is english
+                    $mdKeyboardProvider.defaultLayout('Deutsch');
+                })
+                .controller('keyboardDemoCtrl', function ($scope) {
+                    $scope.text = '';
+                    $scope.numbers = '';
+                });
+        </script>
+    </body>
+</html>
