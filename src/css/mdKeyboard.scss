@@ -53,6 +53,7 @@ md-keyboard {
         opacity: 1;
         display: block;
         transform: translate3d(0, $keyboard-hidden-bottom-padding, 0) !important;
+        transition: $swift-ease-out;
     }
 
     &.ng-leave-active {
@@ -144,6 +145,10 @@ md-keyboard {
                 margin: 0;
             }
         }
+    }
+
+    & ~ .md-scroll-mask {
+        pointer-events: none;
     }
 }
 

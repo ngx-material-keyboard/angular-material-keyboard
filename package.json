@@ -16,6 +16,7 @@
     "conventional-changelog": "0.0.16",
     "gulp": "^3.8.11",
     "gulp-angular-embed-templates": "^2.1.2",
+    "gulp-clean-css": "^2.0.8",
     "gulp-concat": "^2.5.2",
     "gulp-footer": "^1.0.5",
     "gulp-header": "^1.2.2",
@@ -24,6 +25,7 @@
     "gulp-ng-annotate": "^2.0.0",
     "gulp-replace": "^0.5.4",
     "gulp-sass": "^2.2.0",
+    "gulp-sourcemaps": "^1.6.0",
     "gulp-uglify": "^1.1.0",
     "jshint-stylish": "^1.0.0"
   },
@@ -56,5 +58,5 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "gulp build"
   },
-  "version": "0.0.1"
+  "version": "0.0.3"
 }

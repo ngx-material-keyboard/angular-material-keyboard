@@ -58,7 +58,7 @@
 
 MdKeyboardProvider.$inject = ["$$interimElementProvider", "$injector", "keyboardLayouts", "keyboardDeadkey", "keyboardSymbols", "keyboardNumpad"];
 MdKeyboardDirective.$inject = ["$mdKeyboard", "$mdTheming"];
-useKeyboardDirective.$inject = ["$mdKeyboard", "$injector", "$timeout", "$animate", "$log", "$rootScope"];
+useKeyboardDirective.$inject = ["$mdKeyboard", "$injector", "$timeout", "$animate", "$rootScope"];
 angular
     .module('material.components.keyboard', [
         'material.core',
@@ -1176,7 +1176,8 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
     var SCOPE;
     var CLOSING_VELOCITY = 0.5;
     var PADDING = 80; // same as css
-    var LAYOUT = 'US International';
+    var DEFAULT_LAYOUT = 'US International';
+    var CURRENT_LAYOUT = DEFAULT_LAYOUT;
     var LAYOUTS = keyboardLayouts;
     var DEADKEY = keyboardDeadkey;
     var SYMBOLS = keyboardSymbols;
@@ -1189,7 +1190,9 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
             options: keyboardDefaults
         })
         .addMethod('getLayout', getLayout)
+        .addMethod('getCurrentLayout', getCurrentLayout)
         .addMethod('getLayouts', getLayouts)
+        .addMethod('defaultLayout', defaultLayout)
         .addMethod('useLayout', useLayout)
         .addMethod('addLayout', addLayout)
         .addMethod('isVisible', isVisible);
@@ -1197,14 +1200,23 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
     // should be available in provider (config phase) not only
     // in service as defined in $$interimElementProvider
     $mdKeyboard.getLayout = getLayout;
+    $mdKeyboard.getCurrentLayout = getCurrentLayout;
     $mdKeyboard.getLayouts = getLayouts;
+    $mdKeyboard.defaultLayout = defaultLayout;
     $mdKeyboard.useLayout = useLayout;
     $mdKeyboard.addLayout = addLayout;
     $mdKeyboard.isVisible = isVisible;
 
     // get currently used layout object
-    function getLayout() {
-        return LAYOUTS[LAYOUT];
+    function getCurrentLayout() {
+        return LAYOUTS[CURRENT_LAYOUT];
+    }
+
+    // get currently used layout object
+    function getLayout(layout) {
+        if (LAYOUTS[layout]) {
+            return LAYOUTS[layout];
+        }
     }
 
     // get names of available layouts
@@ -1216,26 +1228,47 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
         return layouts;
     }
 
+    // set default layout
+    function defaultLayout(layout) {
+        if (LAYOUTS[layout]) {
+            DEFAULT_LAYOUT = layout;
+        } else {
+            if (layout.length) {
+                var msg = "" +
+                    "The keyboard layout '" + layout + "' does not exists. \n" +
+                    "The default layout \"" + DEFAULT_LAYOUT + "\" will be used.\n" +
+                    "To get a list of the available layouts use 'showLayouts'.";
+                console.warn(msg);
+            }
+        }
+    }
+
     // set name of layout to use
     function useLayout(layout) {
         if (LAYOUTS[layout]) {
-            LAYOUT = layout;
-            if (SCOPE) {
-                SCOPE.$broadcast('$mdKeyboardLayoutChanged', layout);
-            }
+            CURRENT_LAYOUT = layout;
             //console.log($injector.get('$rootScope'), $injector.get('$scope'));
             //$rootScope = $injector.get('$rootScope');
             //$rootScope.$broadcast('$mdKeyboardLayoutChanged', layout);
         } else {
-            var msg = "" +
-                "The keyboard layout '" + layout + "' does not exists. \n" +
-                "To get a list of the available layouts use 'showLayouts'.";
-            console.warn(msg);
+            CURRENT_LAYOUT = DEFAULT_LAYOUT;
+            if (layout.length) {
+                var msg = "" +
+                    "The keyboard layout '" + layout + "' does not exists. \n" +
+                    "The default layout \"" + DEFAULT_LAYOUT + "\" will be used.\n" +
+                    "To get a list of the available layouts use 'showLayouts'.";
+                console.warn(msg);
+            }
+        }
+        // broadcast new layout
+        if (SCOPE) {
+            SCOPE.$broadcast('$mdKeyboardLayoutChanged', CURRENT_LAYOUT);
         }
     }
 
     // add a custom layout
     function addLayout(layout, keys) {
+        if (!layout) return;
         if (!LAYOUTS[layout]) {
             LAYOUTS[layout] = keys;
         } else {
@@ -1263,7 +1296,7 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
             themable: true,
             disableParentScroll: true,
             clickOutsideToClose: true,
-            layout: LAYOUT,
+            layout: CURRENT_LAYOUT,
             layouts: LAYOUTS,
             deadkey: DEADKEY,
             symbols: SYMBOLS,
@@ -1400,7 +1433,7 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, $rootScope) {
+function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
@@ -1441,7 +1474,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, 
                 if (!$mdKeyboard.isVisible()) {
                     $mdKeyboard.currentModel = ngModelCtrl;
                     $rootScope.keyboardAnimation = $mdKeyboard.show({
-                        template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row" ng-switch=key[0] ng-class=getKeyClass(key)><span ng-switch-when=Bksp><md-button class="md-raised key-bksp" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_backspace</md-icon></md-button></span> <span ng-switch-when=Tab><md-button class="md-raised key-tab" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_tab</md-icon></md-button></span> <span ng-switch-when=Caps><md-button class="md-raised key-caps" ng-class="{\'locked\': capsLocked, \'md-focused\': capsLocked}" ng-mousedown="pressed($event, key[0])" ng-click=toggleCapsLock() aria-label={{key[0]}}><md-icon>keyboard_capslock</md-icon></md-button></span> <span ng-switch-when=Enter><md-button class="md-raised key-enter" ng-mousedown="pressed($event, key[0])" aria-label={{key[0]}}><md-icon>keyboard_return</md-icon></md-button></span> <span ng-switch-when=Shift><md-button class="md-raised key-shift" ng-mousedown="pressed($event, key[0]); toggleCaps()" aria-label={{key[0]}}>{{key[0]}}</md-button></span> <span ng-switch-when=Spacer></span> <span ng-switch-default><md-button class="md-raised key-char" ng-mousedown="pressed($event, key[!capsLocked && !caps ? 0 : 1])" aria-label="{{key[!capsLocked && !caps ? 0 : 1]}}">{{key[!capsLocked && !caps ? 0 : 1]}}</md-button></span></div></div></md-keyboard>',
+                        template:'<md-keyboard class=md-grid layout=column ng-cloak><div ng-repeat="row in keyboard.keys" layout=row><div flex ng-repeat="key in row" ng-switch=key[0] ng-class=getKeyClass(key)><span ng-switch-when=Bksp><md-button class="md-raised key-bksp" ng-mousedown="pressed($event, key[0])" aria-label="{{key[0] || \'key\'}}"><md-icon>keyboard_backspace</md-icon></md-button></span> <span ng-switch-when=Tab><md-button class="md-raised key-tab" ng-mousedown="pressed($event, key[0])" aria-label="{{key[0] || \'key\'}}"><md-icon>keyboard_tab</md-icon></md-button></span> <span ng-switch-when=Caps><md-button class="md-raised key-caps" ng-class="{\'locked\': capsLocked, \'md-focused\': capsLocked}" ng-mousedown="pressed($event, key[0])" aria-label="{{key[0] || \'key\'}}"><md-icon>keyboard_capslock</md-icon></md-button></span> <span ng-switch-when=Enter><md-button class="md-raised key-enter" ng-mousedown="pressed($event, key[0])" aria-label="{{key[0] || \'key\'}}"><md-icon>keyboard_return</md-icon></md-button></span> <span ng-switch-when=Shift><md-button class="md-raised key-shift" ng-mousedown="pressed($event, key[0])" aria-label="{{key[0] || \'key\'}}">{{key[0]}}</md-button></span> <span ng-switch-when=Spacer></span> <span ng-switch-default><md-button class="md-raised key-char" ng-mousedown="pressed($event, key[!capsLocked && !caps ? 0 : 1] || key[0])" aria-label="{{key[!capsLocked && !caps ? 0 : 1] || \'key\'}}">{{key[!capsLocked && !caps ? 0 : 1] || key[0]}}</md-button></span></div></div></md-keyboard>',
                         controller: mdKeyboardController,
                         bindToController: true
                     });
@@ -1455,20 +1488,10 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, 
             }
 
             function mdKeyboardController($scope) {
-                if (attrs.useKeyboard) {
-                    $mdKeyboard.useLayout(attrs.useKeyboard);
-                }
-
-                var toggleCaps = function () {
-                    $scope.caps = !$scope.caps;
-                };
-
-                var toggleCapsLock = function () {
-                    $scope.capsLocked = !$scope.capsLocked;
-                };
+                $mdKeyboard.useLayout(attrs.useKeyboard);
 
                 var getKeyClass = function (key) {
-                    var k = key[0].toLowerCase();
+                    var k = (key[0] || ' ').toLowerCase();
                     var keys = ['bksp', 'tab', 'caps', 'enter', 'shift', 'alt', 'altgr', 'altlk'];
 
                     // space bar
@@ -1487,19 +1510,129 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, 
                     return 'key-' + k;
                 };
 
+                var triggerKey = function($event, key) {
+                    $event.preventDefault();
+
+                    switch (key) {
+                        case "Caps":
+                            $scope.capsLocked = !$scope.capsLocked;
+                            $scope.caps = false;
+                            break;
+                        
+                        case "Shift":
+                            $scope.caps = !$scope.caps;
+                            break;
+                        
+                        case "Alt":
+                        case "AltGr":
+                        case "AltLk":
+                            // modify input, visualize
+                            //self.VKI_modify(type);
+                            break;
+
+                        case "Tab":
+
+                            // cycle through elements
+                            // or insert \t tab
+                            //if (self.VKI_activeTab) {
+                            //    if (self.VKI_target.form) {
+                            //        var target = self.VKI_target, elems = target.form.elements;
+                            //        self.VKI_close(false);
+                            //        for (var z = 0, me = false, j = -1; z < elems.length; z++) {
+                            //            if (j == -1 && elems[z].getAttribute("VKI_attached")) j = z;
+                            //            if (me) {
+                            //                if (self.VKI_activeTab == 1 && elems[z]) break;
+                            //                if (elems[z].getAttribute("VKI_attached")) break;
+                            //            } else if (elems[z] == target) me = true;
+                            //        }
+                            //        if (z == elems.length) z = Math.max(j, 0);
+                            //        if (elems[z].getAttribute("VKI_attached")) {
+                            //            self.VKI_show(elems[z]);
+                            //        } else elems[z].focus();
+                            //    } else self.VKI_target.focus();
+                            //} else self.VKI_insert("\t");
+                            //return false;
+
+                            $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\t");
+                            $mdKeyboard.currentModel.$validate();
+                            $mdKeyboard.currentModel.$render();
+
+                            break;
+
+                        case "Bksp":
+
+                            // backspace
+                            //self.VKI_target.focus();
+                            //if (self.VKI_target.setSelectionRange && hasSelectionStartEnd(self.VKI_target) && !self.VKI_target.readOnly) {
+                            //    var rng = [self.VKI_target.selectionStart, self.VKI_target.selectionEnd];
+                            //    if (rng[0] < rng[1]) rng[0]++;
+                            //    self.VKI_target.value = self.VKI_target.value.substr(0, rng[0] - 1) + self.VKI_target.value.substr(rng[1]);
+                            //    self.VKI_target.setSelectionRange(rng[0] - 1, rng[0] - 1);
+                            //} else if (self.VKI_target.createTextRange && !self.VKI_target.readOnly) {
+                            //    try {
+                            //        self.VKI_target.range.select();
+                            //    } catch (e) {
+                            //        self.VKI_target.range = document.selection.createRange();
+                            //    }
+                            //    if (!self.VKI_target.range.text.length) self.VKI_target.range.moveStart('character', -1);
+                            //    self.VKI_target.range.text = "";
+                            //} else self.VKI_target.value = self.VKI_target.value.substr(0, self.VKI_target.value.length - 1);
+                            //if (self.VKI_shift) self.VKI_modify("Shift");
+                            //if (self.VKI_altgr) self.VKI_modify("AltGr");
+                            //self.VKI_target.focus();
+                            //self.keyInputCallback();
+                            //return true;
+
+                            $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '').slice(0, -1));
+                            $mdKeyboard.currentModel.$validate();
+                            $mdKeyboard.currentModel.$render();
+
+                            break;
+
+                        case "Enter":
+                            if (element[0].nodeName.toUpperCase() != 'TEXTAREA') {
+                                $timeout(function () {
+                                    angular.element(element[0].form).triggerHandler('submit');
+                                });
+                            } else {
+                                $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\n");
+                                $mdKeyboard.currentModel.$validate();
+                                $mdKeyboard.currentModel.$render();
+                            }
+
+                            break;
+
+                        default:
+
+                            //$timeout(function () {
+                            //var event = new window.KeyboardEvent('keypress', {
+                            //    bubbles: true,
+                            //    cancelable: true,
+                            //    shiftKey: true,
+                            //    keyCode: key.charCodeAt(0)
+                            //});
+                            // element[0].dispatchEvent(event);
+                            //});
+
+                            $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + key[0]);
+                            $mdKeyboard.currentModel.$validate();
+                            $mdKeyboard.currentModel.$render();
+
+                            $scope.caps = false;
+                    }
+                };
+
                 var _init = function () {
                     $scope.resolve = function () {
                         $mdKeyboard.hide('ok');
                     };
                     $scope.getKeyClass = getKeyClass;
-                    $scope.keyboard = $mdKeyboard.getLayout();
-                    $scope.toggleCaps = toggleCaps;
-                    $scope.toggleCapsLock = toggleCapsLock;
+                    $scope.keyboard = $mdKeyboard.getCurrentLayout();
                     $scope.pressed = triggerKey;
 
                     $scope.$on('$mdKeyboardLayoutChanged', function () {
-                        $scope.keyboard = $mdKeyboard.getLayout();
-                        $scope.pressed = triggerKey;
+                        $scope.keyboard = $mdKeyboard.getCurrentLayout();
+                        $scope.$apply();
                     });
                 };
 
@@ -1516,112 +1649,6 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, 
                     sel.moveStart('character', -element.value.length);
                     return sel.text.length - selLen;
                 }
-            };
-
-            function triggerKey($event, key) {
-                $event.preventDefault();
-                $log.info('key pressed: %s (%s)', key, key.charCodeAt(0));
-
-                switch (key) {
-                    case "Caps":
-                    case "Shift":
-                    case "Alt":
-                    case "AltGr":
-                    case "AltLk":
-                        // modify input, visualize
-                        //self.VKI_modify(type);
-                        break;
-
-                    case "Tab":
-
-                        // cycle through elements
-                        // or insert \t tab
-                        //if (self.VKI_activeTab) {
-                        //    if (self.VKI_target.form) {
-                        //        var target = self.VKI_target, elems = target.form.elements;
-                        //        self.VKI_close(false);
-                        //        for (var z = 0, me = false, j = -1; z < elems.length; z++) {
-                        //            if (j == -1 && elems[z].getAttribute("VKI_attached")) j = z;
-                        //            if (me) {
-                        //                if (self.VKI_activeTab == 1 && elems[z]) break;
-                        //                if (elems[z].getAttribute("VKI_attached")) break;
-                        //            } else if (elems[z] == target) me = true;
-                        //        }
-                        //        if (z == elems.length) z = Math.max(j, 0);
-                        //        if (elems[z].getAttribute("VKI_attached")) {
-                        //            self.VKI_show(elems[z]);
-                        //        } else elems[z].focus();
-                        //    } else self.VKI_target.focus();
-                        //} else self.VKI_insert("\t");
-                        //return false;
-
-                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\t");
-                        $mdKeyboard.currentModel.$validate();
-                        $mdKeyboard.currentModel.$render();
-
-                        break;
-
-                    case "Bksp":
-
-                        // backspace
-                        //self.VKI_target.focus();
-                        //if (self.VKI_target.setSelectionRange && hasSelectionStartEnd(self.VKI_target) && !self.VKI_target.readOnly) {
-                        //    var rng = [self.VKI_target.selectionStart, self.VKI_target.selectionEnd];
-                        //    if (rng[0] < rng[1]) rng[0]++;
-                        //    self.VKI_target.value = self.VKI_target.value.substr(0, rng[0] - 1) + self.VKI_target.value.substr(rng[1]);
-                        //    self.VKI_target.setSelectionRange(rng[0] - 1, rng[0] - 1);
-                        //} else if (self.VKI_target.createTextRange && !self.VKI_target.readOnly) {
-                        //    try {
-                        //        self.VKI_target.range.select();
-                        //    } catch (e) {
-                        //        self.VKI_target.range = document.selection.createRange();
-                        //    }
-                        //    if (!self.VKI_target.range.text.length) self.VKI_target.range.moveStart('character', -1);
-                        //    self.VKI_target.range.text = "";
-                        //} else self.VKI_target.value = self.VKI_target.value.substr(0, self.VKI_target.value.length - 1);
-                        //if (self.VKI_shift) self.VKI_modify("Shift");
-                        //if (self.VKI_altgr) self.VKI_modify("AltGr");
-                        //self.VKI_target.focus();
-                        //self.keyInputCallback();
-                        //return true;
-
-                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '').slice(0, -1));
-                        $mdKeyboard.currentModel.$validate();
-                        $mdKeyboard.currentModel.$render();
-
-                        break;
-
-                    case "Enter":
-                        if (element[0].nodeName.toUpperCase() != 'TEXTAREA') {
-                            $timeout(function () {
-                                angular.element(element[0].form).triggerHandler('submit');
-                            });
-                        } else {
-                            $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + "\n");
-                            $mdKeyboard.currentModel.$validate();
-                            $mdKeyboard.currentModel.$render();
-                        }
-
-                        break;
-
-                    default:
-
-                        //$timeout(function () {
-                        //var event = new window.KeyboardEvent('keypress', {
-                        //    bubbles: true,
-                        //    cancelable: true,
-                        //    shiftKey: true,
-                        //    keyCode: key.charCodeAt(0)
-                        //});
-                        // element[0].dispatchEvent(event);
-                        //});
-
-                        $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + key[0]);
-                        $mdKeyboard.currentModel.$validate();
-                        $mdKeyboard.currentModel.$render();
-
-                        scope.caps = false;
-                }
             }
 
             function hideKeyboard() {
@@ -1630,7 +1657,7 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, 
                 }
                 $rootScope.keyboardTimeout = $timeout(function () {
                     $rootScope.keyboardAnimation = $mdKeyboard.hide();
-                }, 500);
+                }, 200);
             }
         }
     }

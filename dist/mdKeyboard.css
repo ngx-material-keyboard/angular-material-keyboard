@@ -20,7 +20,8 @@ md-keyboard {
   md-keyboard.ng-enter-active {
     opacity: 1;
     display: block;
-    transform: translate3d(0, 80px, 0) !important; }
+    transform: translate3d(0, 80px, 0) !important;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
   md-keyboard.ng-leave-active {
     transform: translate3d(0, 100%, 0) !important;
     transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2); }
@@ -77,6 +78,8 @@ md-keyboard {
       width: 100%; }
       md-keyboard .layout-row > .flex > span .md-button {
         margin: 0; }
+  md-keyboard ~ .md-scroll-mask {
+    pointer-events: none; }
 
 @media screen and (-ms-high-contrast: active) {
   md-keyboard {
