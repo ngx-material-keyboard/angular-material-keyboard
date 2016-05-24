@@ -56,7 +56,7 @@
  *
  */
 
-MdKeyboardProvider.$inject = ["$$interimElementProvider", "$injector", "keyboardLayouts", "keyboardDeadkey", "keyboardSymbols", "keyboardNumpad"];
+MdKeyboardProvider.$inject = ["$$interimElementProvider", "keyboardLayouts", "keyboardDeadkey", "keyboardSymbols", "keyboardNumpad"];
 MdKeyboardDirective.$inject = ["$mdKeyboard"];
 useKeyboardDirective.$inject = ["$mdKeyboard", "$timeout", "$animate", "$rootScope"];
 angular
@@ -1170,7 +1170,7 @@ angular
     .module('material.components.keyboard')
     .provider('$mdKeyboard', MdKeyboardProvider);
 
-function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
+function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
     // how fast we need to flick down to close the sheet, pixels/ms
     keyboardDefaults.$inject = ["$animate", "$mdConstant", "$mdUtil", "$mdTheming", "$mdKeyboard", "$rootElement", "$mdGesture"];
     var SCOPE;
@@ -1232,6 +1232,7 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
     function defaultLayout(layout) {
         if (LAYOUTS[layout]) {
             DEFAULT_LAYOUT = layout;
+            CURRENT_LAYOUT = layout;
         } else {
             if (layout.length) {
                 var msg = "" +
@@ -1247,11 +1248,11 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
     function useLayout(layout) {
         if (LAYOUTS[layout]) {
             CURRENT_LAYOUT = layout;
-            //console.log($injector.get('$rootScope'), $injector.get('$scope'));
-            //$rootScope = $injector.get('$rootScope');
-            //$rootScope.$broadcast('$mdKeyboardLayoutChanged', layout);
+            // broadcast new layout
+            if (SCOPE) {
+                SCOPE.$broadcast('$mdKeyboardLayoutChanged', CURRENT_LAYOUT);
+            }
         } else {
-            CURRENT_LAYOUT = DEFAULT_LAYOUT;
             if (layout.length) {
                 var msg = "" +
                     "The keyboard layout '" + layout + "' does not exists. \n" +
@@ -1259,10 +1260,6 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
                     "To get a list of the available layouts use 'showLayouts'.";
                 console.warn(msg);
             }
-        }
-        // broadcast new layout
-        if (SCOPE) {
-            SCOPE.$broadcast('$mdKeyboardLayoutChanged', CURRENT_LAYOUT);
         }
     }
 
