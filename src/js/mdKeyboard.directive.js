@@ -112,11 +112,12 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $log, 
                     $scope.keyboard = $mdKeyboard.getLayout();
                     $scope.toggleCaps = toggleCaps;
                     $scope.toggleCapsLock = toggleCapsLock;
+                    $scope.keyboard = $mdKeyboard.getCurrentLayout();
                     $scope.pressed = triggerKey;
 
                     $scope.$on('$mdKeyboardLayoutChanged', function () {
-                        $scope.keyboard = $mdKeyboard.getLayout();
-                        $scope.pressed = triggerKey;
+                        $scope.keyboard = $mdKeyboard.getCurrentLayout();
+                        $scope.$apply();
                     });
                 };
 
