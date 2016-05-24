@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Angular-material-keyboard by davidenke</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Angular-material-keyboard</h1>
+      <h2 class="project-tagline">Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/) and the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard) based on GreyWyvern VKI (http://www.greywyvern.com/code/javascript/keyboard).</h2>
+      <a href="https://github.com/davidenke/angular-material-keyboard" class="btn">View on GitHub</a>
+      <a href="https://github.com/davidenke/angular-material-keyboard/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/davidenke/angular-material-keyboard/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="angular-material-keyboard" class="anchor" href="#angular-material-keyboard" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>angular-material-keyboard</h1>
+
+<p>Onscreen virtual keyboard for <a href="https://angularjs.org/">Angular</a> using <a href="https://material.angularjs.org/">Angular Material</a> and the <a href="https://github.com/the-darc/angular-virtual-keyboard">Angular Virtual Keyboard by the-darc</a> based on <a href="http://www.greywyvern.com/code/javascript/keyboard">GreyWyvern VKI</a>.</p>
+
+<h2>
+<a id="demo" class="anchor" href="#demo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>demo</h2>
+
+<p>Checkout the <a href="https://cdn.rawgit.com/davidenke/angular-material-keyboard/0.0.4/demo.html">demo.html</a></p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>usage</h2>
+
+<ul>
+<li>download or clone the latest release, or use your preferred packet manager</li>
+<li>add the javascript and css files to your project:</li>
+</ul>
+
+<div class="highlight highlight-text-html-basic"><pre><span class="pl-s1">  &lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>angular-material-keyboard/dist/mdKeyboard.min.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span>
+  &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>stylesheet<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>angular-material-keyboard/dist/mdKeyboard.css<span class="pl-pds">"</span></span>&gt;
+  &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>stylesheet<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>//fonts.googleapis.com/css?family=Material+Icons<span class="pl-pds">"</span></span>&gt;</pre></div>
+
+<ul>
+<li>register module:</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-s"><span class="pl-pds">'</span>use strict<span class="pl-pds">'</span></span>;
+
+angular
+    .<span class="pl-en">module</span>(<span class="pl-s"><span class="pl-pds">'</span>myApp<span class="pl-pds">'</span></span>, [
+        <span class="pl-s"><span class="pl-pds">'</span>ngAria<span class="pl-pds">'</span></span>,
+        <span class="pl-s"><span class="pl-pds">'</span>ngAnimate<span class="pl-pds">'</span></span>,
+        <span class="pl-s"><span class="pl-pds">'</span>ngMaterial<span class="pl-pds">'</span></span>,
+        <span class="pl-s"><span class="pl-pds">'</span>material.components.keyboard<span class="pl-pds">'</span></span>
+    ]);</pre></div>
+
+<ul>
+<li>use as directive</li>
+</ul>
+
+<div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">form</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>myForm<span class="pl-pds">"</span></span>&gt;
+  &lt;<span class="pl-ent">md</span><span class="pl-e">-input-container</span>&gt;
+      &lt;<span class="pl-ent">input</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text<span class="pl-pds">"</span></span>
+             <span class="pl-e">use-keyboard</span>=<span class="pl-s"><span class="pl-pds">"</span>Deutsch<span class="pl-pds">"</span></span>
+             <span class="pl-e">ng-model</span>=<span class="pl-s"><span class="pl-pds">"</span>myModel<span class="pl-pds">"</span></span>&gt;
+  &lt;/<span class="pl-ent">md</span><span class="pl-e">-input-container</span>&gt;
+&lt;/<span class="pl-ent">form</span>&gt;</pre></div>
+
+<h2>
+<a id="configure" class="anchor" href="#configure" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>configure</h2>
+
+<p>Use the <code>mdKeyboardProvider</code> to set your default layout or to add custom layouts:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-s"><span class="pl-pds">'</span>use strict<span class="pl-pds">'</span></span>;
+
+angular
+  .<span class="pl-en">module</span>(<span class="pl-s"><span class="pl-pds">'</span>myApp<span class="pl-pds">'</span></span>)
+  .<span class="pl-en">config</span>(<span class="pl-k">function</span> (<span class="pl-smi">$mdKeyboardProvider</span>) {
+
+    <span class="pl-c">// add layout for number fields</span>
+    <span class="pl-smi">$mdKeyboardProvider</span>.<span class="pl-en">addLayout</span>(<span class="pl-s"><span class="pl-pds">'</span>Numbers<span class="pl-pds">'</span></span>, {
+      <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>Numbers<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>keys<span class="pl-pds">'</span></span><span class="pl-k">:</span> [
+            [[<span class="pl-s"><span class="pl-pds">'</span>7<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>7<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>8<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>8<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>9<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>9<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>Bksp<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>Bksp<span class="pl-pds">'</span></span>]],
+            [[<span class="pl-s"><span class="pl-pds">'</span>4<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>4<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>5<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>5<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>6<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>6<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>-<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>-<span class="pl-pds">'</span></span>]],
+            [[<span class="pl-s"><span class="pl-pds">'</span>1<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>1<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>2<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>2<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>3<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>3<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>+<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>+<span class="pl-pds">'</span></span>]],
+            [[<span class="pl-s"><span class="pl-pds">'</span>0<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>0<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>Spacer<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>,<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>Enter<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>Enter<span class="pl-pds">'</span></span>]]
+      ], <span class="pl-s"><span class="pl-pds">'</span>lang<span class="pl-pds">'</span></span><span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>de<span class="pl-pds">'</span></span>]
+    });
+
+    <span class="pl-c">// default layout is german</span>
+    <span class="pl-smi">$mdKeyboardProvider</span>.<span class="pl-en">defaultLayout</span>(<span class="pl-s"><span class="pl-pds">'</span>Deutsch<span class="pl-pds">'</span></span>);
+  });</pre></div>
+
+<p>The first entry in each 'key' array is the default char. The second is used when pressing 'shift' or 'caps lock', the third when 'alt' is rpessed.
+You can use the <code>spacer</code> key to provide a gap in the layout.</p>
+
+<p>The <code>$mdKeyboardProvider</code> has the following methods:</p>
+
+<p><code>getLayout(layout:string):object</code> will give you the corresponding layout</p>
+
+<p><code>getCurrentLayout():string</code> will give you the current used layout</p>
+
+<p><code>getLayouts():array</code> returns all registered layouts</p>
+
+<p><code>defaultLayout(layout:string):void</code> tells the directive which layout to use as default</p>
+
+<p><code>useLayout(layout:string):void</code> tells the directive which layout to use</p>
+
+<p><code>addLayout(layout:string, keys:array):void</code> expects the name of a new layout to register along an 'keys' array</p>
+
+<p><code>isVisible():boolean</code> returns wether the keyboard is currently visible or not</p>
+
+<h2>
+<a id="build" class="anchor" href="#build" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>build</h2>
+
+<ul>
+<li>install node.js (I recomend to use <a href="https://github.com/creationix/nvm">nvm</a>)</li>
+<li>get dependencies: <code>$ npm install &amp;&amp; bower install</code>
+</li>
+<li>build with gulp task: <code>$ gulp build</code>
+</li>
+</ul>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/davidenke/angular-material-keyboard">Angular-material-keyboard</a> is maintained by <a href="https://github.com/davidenke">davidenke</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
