@@ -232,7 +232,7 @@ function useKeyboardDirective($mdKeyboard, $timeout, $animate, $rootScope) {
                 }
                 $rootScope.keyboardTimeout = $timeout(function () {
                     $rootScope.keyboardAnimation = $mdKeyboard.hide();
-                }, 500);
+                }, 200);
             }
         }
     }
