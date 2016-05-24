@@ -83,7 +83,6 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
             //$rootScope = $injector.get('$rootScope');
             //$rootScope.$broadcast('$mdKeyboardLayoutChanged', layout);
         } else {
-            CURRENT_LAYOUT = DEFAULT_LAYOUT;
             if (layout.length) {
                 var msg = "" +
                     "The keyboard layout '" + layout + "' does not exists. \n" +
