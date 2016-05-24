@@ -3,11 +3,10 @@ angular
     .directive('mdKeyboard', MdKeyboardDirective)
     .directive('useKeyboard', useKeyboardDirective);
 
-function MdKeyboardDirective($mdKeyboard, $mdTheming) {
+function MdKeyboardDirective($mdKeyboard) {
     return {
         restrict: 'E',
-        link: function postLink(scope, element) {
-            $mdTheming(element);
+        link: function postLink(scope) {
             // When navigation force destroys an interimElement, then
             // listen and $destroy() that interim instance...
             scope.$on('$destroy', function () {

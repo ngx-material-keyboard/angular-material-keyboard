@@ -57,8 +57,8 @@
  */
 
 MdKeyboardProvider.$inject = ["$$interimElementProvider", "$injector", "keyboardLayouts", "keyboardDeadkey", "keyboardSymbols", "keyboardNumpad"];
-MdKeyboardDirective.$inject = ["$mdKeyboard", "$mdTheming"];
-useKeyboardDirective.$inject = ["$mdKeyboard", "$injector", "$timeout", "$animate", "$rootScope"];
+MdKeyboardDirective.$inject = ["$mdKeyboard"];
+useKeyboardDirective.$inject = ["$mdKeyboard", "$timeout", "$animate", "$rootScope"];
 angular
     .module('material.components.keyboard', [
         'material.core',
@@ -1209,7 +1209,7 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
 
     // get currently used layout object
     function getCurrentLayout() {
-        return LAYOUTS[CURRENT_LAYOUT];
+        return CURRENT_LAYOUT;
     }
 
     // get currently used layout object
@@ -1419,11 +1419,10 @@ angular
     .directive('mdKeyboard', MdKeyboardDirective)
     .directive('useKeyboard', useKeyboardDirective);
 
-function MdKeyboardDirective($mdKeyboard, $mdTheming) {
+function MdKeyboardDirective($mdKeyboard) {
     return {
         restrict: 'E',
-        link: function postLink(scope, element, attr) {
-            $mdTheming(element);
+        link: function postLink(scope) {
             // When navigation force destroys an interimElement, then
             // listen and $destroy() that interim instance...
             scope.$on('$destroy', function () {
@@ -1433,7 +1432,7 @@ function MdKeyboardDirective($mdKeyboard, $mdTheming) {
     };
 }
 
-function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $rootScope) {
+function useKeyboardDirective($mdKeyboard, $timeout, $animate, $rootScope) {
     return {
         restrict: 'A',
         require: '?ngModel',
@@ -1603,17 +1602,6 @@ function useKeyboardDirective($mdKeyboard, $injector, $timeout, $animate, $rootS
                             break;
 
                         default:
-
-                            //$timeout(function () {
-                            //var event = new window.KeyboardEvent('keypress', {
-                            //    bubbles: true,
-                            //    cancelable: true,
-                            //    shiftKey: true,
-                            //    keyCode: key.charCodeAt(0)
-                            //});
-                            // element[0].dispatchEvent(event);
-                            //});
-
                             $mdKeyboard.currentModel.$setViewValue(($mdKeyboard.currentModel.$viewValue || '') + key[0]);
                             $mdKeyboard.currentModel.$validate();
                             $mdKeyboard.currentModel.$render();
