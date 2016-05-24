@@ -79,9 +79,10 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     function useLayout(layout) {
         if (LAYOUTS[layout]) {
             CURRENT_LAYOUT = layout;
-            //console.log($injector.get('$rootScope'), $injector.get('$scope'));
-            //$rootScope = $injector.get('$rootScope');
-            //$rootScope.$broadcast('$mdKeyboardLayoutChanged', layout);
+            // broadcast new layout
+            if (SCOPE) {
+                SCOPE.$broadcast('$mdKeyboardLayoutChanged', CURRENT_LAYOUT);
+            }
         } else {
             if (layout.length) {
                 var msg = "" +
@@ -90,10 +91,6 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                     "To get a list of the available layouts use 'showLayouts'.";
                 console.warn(msg);
             }
-        }
-        // broadcast new layout
-        if (SCOPE) {
-            SCOPE.$broadcast('$mdKeyboardLayoutChanged', CURRENT_LAYOUT);
         }
     }
 
