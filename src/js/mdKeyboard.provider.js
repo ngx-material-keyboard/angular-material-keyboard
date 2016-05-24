@@ -40,7 +40,7 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
 
     // get currently used layout object
     function getCurrentLayout() {
-        return LAYOUTS[CURRENT_LAYOUT];
+        return CURRENT_LAYOUT;
     }
 
     // get currently used layout object
