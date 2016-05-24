@@ -1,8 +1,8 @@
 # angular-material-keyboard
-Onscreen virtual keyboard for Angular (https://angularjs.org/) using Material (https://material.angularjs.org/) and the Angular Virtual Keyboard by the-darc (https://github.com/the-darc/angular-virtual-keyboard) based on GreyWyvern VKI (http://www.greywyvern.com/code/javascript/keyboard).
+Onscreen virtual keyboard for [Angular](https://angularjs.org/) using [Angular Material](https://material.angularjs.org/) and the [Angular Virtual Keyboard by the-darc](https://github.com/the-darc/angular-virtual-keyboard) based on [GreyWyvern VKI](http://www.greywyvern.com/code/javascript/keyboard).
 
 ## demo
-Checkout the demo.html
+Checkout the [demo.html](https://cdn.rawgit.com/davidenke/angular-material-keyboard/master/demo.html)
 
 ## usage
 * download or clone the latest release, or use your preferred packet manager
