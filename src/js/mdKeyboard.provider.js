@@ -63,6 +63,7 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
     function defaultLayout(layout) {
         if (LAYOUTS[layout]) {
             DEFAULT_LAYOUT = layout;
+            CURRENT_LAYOUT = layout;
         } else {
             if (layout.length) {
                 var msg = "" +
