@@ -1246,13 +1246,10 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
 
     // set name of layout to use
     function useLayout(layout) {
-        if (LAYOUTS[layout]) {
+        if (layout && LAYOUTS[layout]) {
             CURRENT_LAYOUT = layout;
-            // broadcast new layout
-            if (SCOPE) {
-                SCOPE.$broadcast('$mdKeyboardLayoutChanged', CURRENT_LAYOUT);
-            }
         } else {
+            CURRENT_LAYOUT = DEFAULT_LAYOUT;
             if (layout.length) {
                 var msg = "" +
                     "The keyboard layout '" + layout + "' does not exists. \n" +
@@ -1260,6 +1257,10 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                     "To get a list of the available layouts use 'showLayouts'.";
                 console.warn(msg);
             }
+        }
+        // broadcast new layout
+        if (SCOPE) {
+            SCOPE.$broadcast('$mdKeyboardLayoutChanged', CURRENT_LAYOUT);
         }
     }
 
@@ -1300,7 +1301,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
             numpad: NUMPAD
         };
 
-        function onShow(scope, element, options, controller) {
+        function onShow(scope, element, options) {
 
             //if (options.clickOutsideToClose) {
             //    document.body.on('click', function () {
@@ -1612,11 +1613,11 @@ function useKeyboardDirective($mdKeyboard, $timeout, $animate, $rootScope) {
                         $mdKeyboard.hide('ok');
                     };
                     $scope.getKeyClass = getKeyClass;
-                    $scope.keyboard = $mdKeyboard.getCurrentLayout();
+                    $scope.keyboard = $mdKeyboard.getLayout($mdKeyboard.getCurrentLayout());
                     $scope.pressed = triggerKey;
 
-                    $scope.$on('$mdKeyboardLayoutChanged', function () {
-                        $scope.keyboard = $mdKeyboard.getCurrentLayout();
+                    $scope.$on('$mdKeyboardLayoutChanged', function ($event, layout) {
+                        $scope.keyboard = $mdKeyboard.getLayout(layout);
                         $scope.$apply();
                     });
                 };
