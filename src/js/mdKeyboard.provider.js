@@ -7,7 +7,8 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
     var SCOPE;
     var CLOSING_VELOCITY = 0.5;
     var PADDING = 80; // same as css
-    var LAYOUT = 'US International';
+    var DEFAULT_LAYOUT = 'US International';
+    var CURRENT_LAYOUT = DEFAULT_LAYOUT;
     var LAYOUTS = keyboardLayouts;
     var DEADKEY = keyboardDeadkey;
     var SYMBOLS = keyboardSymbols;
@@ -20,7 +21,9 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
             options: keyboardDefaults
         })
         .addMethod('getLayout', getLayout)
+        .addMethod('getCurrentLayout', getCurrentLayout)
         .addMethod('getLayouts', getLayouts)
+        .addMethod('defaultLayout', defaultLayout)
         .addMethod('useLayout', useLayout)
         .addMethod('addLayout', addLayout)
         .addMethod('isVisible', isVisible);
@@ -28,14 +31,23 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
     // should be available in provider (config phase) not only
     // in service as defined in $$interimElementProvider
     $mdKeyboard.getLayout = getLayout;
+    $mdKeyboard.getCurrentLayout = getCurrentLayout;
     $mdKeyboard.getLayouts = getLayouts;
+    $mdKeyboard.defaultLayout = defaultLayout;
     $mdKeyboard.useLayout = useLayout;
     $mdKeyboard.addLayout = addLayout;
     $mdKeyboard.isVisible = isVisible;
 
     // get currently used layout object
-    function getLayout() {
-        return LAYOUTS[LAYOUT];
+    function getCurrentLayout() {
+        return LAYOUTS[CURRENT_LAYOUT];
+    }
+
+    // get currently used layout object
+    function getLayout(layout) {
+        if (LAYOUTS[layout]) {
+            return LAYOUTS[layout];
+        }
     }
 
     // get names of available layouts
@@ -47,26 +59,47 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
         return layouts;
     }
 
+    // set default layout
+    function defaultLayout(layout) {
+        if (LAYOUTS[layout]) {
+            DEFAULT_LAYOUT = layout;
+        } else {
+            if (layout.length) {
+                var msg = "" +
+                    "The keyboard layout '" + layout + "' does not exists. \n" +
+                    "The default layout \"" + DEFAULT_LAYOUT + "\" will be used.\n" +
+                    "To get a list of the available layouts use 'showLayouts'.";
+                console.warn(msg);
+            }
+        }
+    }
+
     // set name of layout to use
     function useLayout(layout) {
         if (LAYOUTS[layout]) {
-            LAYOUT = layout;
-            if (SCOPE) {
-                SCOPE.$broadcast('$mdKeyboardLayoutChanged', layout);
-            }
+            CURRENT_LAYOUT = layout;
             //console.log($injector.get('$rootScope'), $injector.get('$scope'));
             //$rootScope = $injector.get('$rootScope');
             //$rootScope.$broadcast('$mdKeyboardLayoutChanged', layout);
         } else {
-            var msg = "" +
-                "The keyboard layout '" + layout + "' does not exists. \n" +
-                "To get a list of the available layouts use 'showLayouts'.";
-            console.warn(msg);
+            CURRENT_LAYOUT = DEFAULT_LAYOUT;
+            if (layout.length) {
+                var msg = "" +
+                    "The keyboard layout '" + layout + "' does not exists. \n" +
+                    "The default layout \"" + DEFAULT_LAYOUT + "\" will be used.\n" +
+                    "To get a list of the available layouts use 'showLayouts'.";
+                console.warn(msg);
+            }
+        }
+        // broadcast new layout
+        if (SCOPE) {
+            SCOPE.$broadcast('$mdKeyboardLayoutChanged', CURRENT_LAYOUT);
         }
     }
 
     // add a custom layout
     function addLayout(layout, keys) {
+        if (!layout) return;
         if (!LAYOUTS[layout]) {
             LAYOUTS[layout] = keys;
         } else {
@@ -94,7 +127,7 @@ function MdKeyboardProvider($$interimElementProvider, $injector, keyboardLayouts
             themable: true,
             disableParentScroll: true,
             clickOutsideToClose: true,
-            layout: LAYOUT,
+            layout: CURRENT_LAYOUT,
             layouts: LAYOUTS,
             deadkey: DEADKEY,
             symbols: SYMBOLS,
