@@ -56,6 +56,7 @@
  *
  */
 
+MdAutocompleteDecorator.$inject = ["$provide"];
 MdKeyboardProvider.$inject = ["$$interimElementProvider", "keyboardLayouts", "keyboardDeadkey", "keyboardSymbols", "keyboardNumpad"];
 MdKeyboardDirective.$inject = ["$mdKeyboard"];
 useKeyboardDirective.$inject = ["$mdKeyboard", "$timeout", "$animate", "$rootScope"];
@@ -1168,11 +1169,80 @@ angular
 
 angular
     .module('material.components.keyboard')
+    .config(MdAutocompleteDecorator);
+
+function MdAutocompleteDecorator($provide) {
+    // decorate md-autocomplete directive
+    // with use-keyboard behavior
+    $provide.decorator('mdAutocompleteDirective', ["$q", "$delegate", "$timeout", "$compile", "$mdUtil", function ($q, $delegate, $timeout, $compile, $mdUtil) {
+        var directive = $delegate[0];
+        var compile = directive.compile;
+
+        directive.compile = function () {
+            var link = compile.apply(this, arguments);
+
+            return function (scope, element, attrs, MdAutocompleteCtrl) {
+                // call original link
+                // function if existant
+                if (angular.isDefined(link)) {
+                    link.apply(this, arguments);
+                }
+
+                if (angular.isDefined(attrs.useKeyboard)) {
+                    $timeout(function () {
+                        var input = angular.element(element[0].querySelector('input[type="search"]:not(use-keyboard)'));
+                        var cloned = input
+                            .clone(true, true)
+                            .attr('use-keyboard', attrs.useKeyboard);
+                        var compiled = $compile(cloned)(scope);
+                        input.replaceWith(compiled);
+
+                        MdAutocompleteCtrl.select = function (index) {
+                            $mdUtil.nextTick(function () {
+                                getDisplayValue(MdAutocompleteCtrl.matches[index]).then(function (val) {
+                                    var ngModel = compiled.controller('ngModel');
+                                    ngModel.$setViewValue(val);
+                                    ngModel.$render();
+                                }).finally(function () {
+                                    scope.selectedItem = MdAutocompleteCtrl.matches[index];
+                                    MdAutocompleteCtrl.loading = false;
+                                    MdAutocompleteCtrl.hidden = true;
+                                });
+                            }, false);
+
+                            function getDisplayValue(item) {
+                                return $q.when(getItemText(item) || item);
+                            }
+
+                            function getItemText(item) {
+                                return (item && scope.itemText) ? scope.itemText(getItemAsNameVal(item)) : null;
+                            }
+
+                            function getItemAsNameVal(item) {
+                                if (!item) return undefined;
+
+                                var locals = {};
+                                if (MdAutocompleteCtrl.itemName) locals[MdAutocompleteCtrl.itemName] = item;
+
+                                return locals;
+                            }
+                        };
+                    });
+                }
+            };
+        };
+
+        return $delegate;
+    }]);
+}
+
+angular
+    .module('material.components.keyboard')
     .provider('$mdKeyboard', MdKeyboardProvider);
 
 function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
     // how fast we need to flick down to close the sheet, pixels/ms
-    keyboardDefaults.$inject = ["$animate", "$mdConstant", "$mdUtil", "$mdTheming", "$mdKeyboard", "$rootElement", "$mdGesture"];
+    keyboardDefaults.$inject = ["$window", "$animate", "$mdConstant", "$mdUtil", "$mdTheming", "$mdKeyboard", "$rootElement", "$mdGesture"];
     var SCOPE;
     var CLOSING_VELOCITY = 0.5;
     var PADDING = 80; // same as css
@@ -1285,7 +1355,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     return $mdKeyboard;
 
     /* @ngInject */
-    function keyboardDefaults($animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $rootElement, $mdGesture) {
+    function keyboardDefaults($window, $animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $rootElement, $mdGesture) {
 
         return {
             onShow: onShow,
@@ -1403,6 +1473,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                     var transitionDuration = Math.min(distanceRemaining / ev.pointer.velocityY * 0.75, 500);
                     element.css($mdConstant.CSS.TRANSITION_DURATION, transitionDuration + 'ms');
                     $mdUtil.nextTick($mdKeyboard.cancel, true);
+                    $window.document.activeElement.blur();
                 } else {
                     element.css($mdConstant.CSS.TRANSITION_DURATION, '');
                     element.css($mdConstant.CSS.TRANSFORM, '');
