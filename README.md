@@ -24,7 +24,7 @@ angular
         'material.components.keyboard'
     ]);
 ```
-* use as directive
+* use as attribute directive on `input`, `textarea` and `md-autocomplete`
 ```html
 <form name="myForm">
   <md-input-container>
