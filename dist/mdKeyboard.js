@@ -1242,7 +1242,7 @@ angular
 
 function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
     // how fast we need to flick down to close the sheet, pixels/ms
-    keyboardDefaults.$inject = ["$animate", "$mdConstant", "$mdUtil", "$mdTheming", "$mdKeyboard", "$rootElement", "$mdGesture"];
+    keyboardDefaults.$inject = ["$window", "$animate", "$mdConstant", "$mdUtil", "$mdTheming", "$mdKeyboard", "$rootElement", "$mdGesture"];
     var SCOPE;
     var CLOSING_VELOCITY = 0.5;
     var PADDING = 80; // same as css
@@ -1355,7 +1355,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     return $mdKeyboard;
 
     /* @ngInject */
-    function keyboardDefaults($animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $rootElement, $mdGesture) {
+    function keyboardDefaults($window, $animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $rootElement, $mdGesture) {
 
         return {
             onShow: onShow,
@@ -1473,6 +1473,7 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
                     var transitionDuration = Math.min(distanceRemaining / ev.pointer.velocityY * 0.75, 500);
                     element.css($mdConstant.CSS.TRANSITION_DURATION, transitionDuration + 'ms');
                     $mdUtil.nextTick($mdKeyboard.cancel, true);
+                    $window.document.activeElement.blur();
                 } else {
                     element.css($mdConstant.CSS.TRANSITION_DURATION, '');
                     element.css($mdConstant.CSS.TRANSFORM, '');
