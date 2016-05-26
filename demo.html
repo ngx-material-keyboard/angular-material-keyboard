@@ -15,12 +15,27 @@
             <section layout="row">
                 <md-input-container flex>
                     <label>Use default keyboard</label>
-                    <input type="text" class="md-input" ng-model="text" use-keyboard>
+                    <input type="text"
+                           class="md-input"
+                           ng-model="text"
+                           use-keyboard>
                 </md-input-container>
                 <md-input-container flex>
                     <label>Use custom keyboard</label>
-                    <input type="number" class="md-input" ng-model="numbers" use-keyboard="Numbers">
+                    <input type="number"
+                           class="md-input"
+                           ng-model="numbers"
+                           use-keyboard="Numbers">
                 </md-input-container>
+                <md-autocomplete flex
+                                 md-floating-label="Use md-autocomplete"
+                                 md-selected-item="selectedItem"
+                                 md-search-text="searchText"
+                                 md-items="item in [8, 16, 32, 64, 128, 256, 512, 1024] | filter:searchText"
+                                 md-item-text="item"
+                                 use-keyboard>
+                    <span md-highlight-text="searchText">{{item}}</span>
+                </md-autocomplete>
             </section>
         </div>
 
