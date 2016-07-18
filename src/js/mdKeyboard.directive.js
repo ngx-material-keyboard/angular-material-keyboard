@@ -101,11 +101,11 @@ function useKeyboardDirective($mdKeyboard, $timeout, $animate, $rootScope) {
                             $scope.capsLocked = !$scope.capsLocked;
                             $scope.caps = false;
                             break;
-                        
+
                         case "Shift":
                             $scope.caps = !$scope.caps;
                             break;
-                        
+
                         case "Alt":
                         case "AltGr":
                         case "AltLk":

@@ -5,7 +5,8 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-        <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Material+Icons|Open+Sans:400,300,600,700|Open+Sans+Condensed:300,700">
+        <link rel="stylesheet"
+              href="//fonts.googleapis.com/css?family=Material+Icons|Open+Sans:400,300,600,700|Open+Sans+Condensed:300,700">
         <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/angular_material/1.0.7/angular-material.min.css">
         <link rel="stylesheet" href="dist/mdKeyboard.min.css">
     </head>
@@ -36,6 +37,22 @@
                                  use-keyboard>
                     <span md-highlight-text="searchText">{{item}}</span>
                 </md-autocomplete>
+            </section>
+            <section layout="row">
+                <md-input-container flex>
+                    <md-switch ng-model="keyboardVisible" ng-disabled="true">
+                        Keyboard
+                        <span ng-if="!keyboardVisible">hidden</span>
+                        <span ng-if="keyboardVisible">visible</span>
+                    </md-switch>
+                </md-input-container>
+                <md-input-container flex>
+                    <md-button class="md-raised"
+                               ng-click="hideKeyboard()"
+                               ng-disabled="!keyboardVisible">
+                        Hide keyboard
+                    </md-button>
+                </md-input-container>
             </section>
         </div>
 
@@ -71,9 +88,23 @@
                     // default layout is german
                     $mdKeyboardProvider.defaultLayout('Deutsch');
                 })
-                .controller('keyboardDemoCtrl', function ($scope) {
+                .controller('keyboardDemoCtrl', function ($log, $scope, $mdKeyboard) {
                     $scope.text = '';
                     $scope.numbers = '';
+                    $scope.keyboardVisible = $mdKeyboard.isVisible();
+
+                    $scope.hideKeyboard = function () {
+                        $mdKeyboard.hide();
+                    };
+
+                    $scope.$watch(
+                        function () {
+                            return $mdKeyboard.isVisible();
+                        },
+                        function (newValue) {
+                            $scope.keyboardVisible = newValue;
+                        }
+                    );
                 });
         </script>
     </body>
