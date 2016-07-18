@@ -2,7 +2,8 @@ angular
     .module('material.components.keyboard')
     .provider('$mdKeyboard', MdKeyboardProvider);
 
-function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
+function MdKeyboardProvider($$interimElementProvider,
+                            keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
     // how fast we need to flick down to close the sheet, pixels/ms
     var SCOPE;
     var CLOSING_VELOCITY = 0.5;
@@ -116,7 +117,8 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     return $mdKeyboard;
 
     /* @ngInject */
-    function keyboardDefaults($window, $animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $rootElement, $mdGesture) {
+    function keyboardDefaults($window, $animate, $rootElement,
+                              $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $mdGesture) {
 
         return {
             onShow: onShow,

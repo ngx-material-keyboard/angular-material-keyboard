@@ -1240,9 +1240,10 @@ angular
     .module('material.components.keyboard')
     .provider('$mdKeyboard', MdKeyboardProvider);
 
-function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
+function MdKeyboardProvider($$interimElementProvider,
+                            keyboardLayouts, keyboardDeadkey, keyboardSymbols, keyboardNumpad) {
     // how fast we need to flick down to close the sheet, pixels/ms
-    keyboardDefaults.$inject = ["$window", "$animate", "$mdConstant", "$mdUtil", "$mdTheming", "$mdKeyboard", "$rootElement", "$mdGesture"];
+    keyboardDefaults.$inject = ["$window", "$animate", "$rootElement", "$mdConstant", "$mdUtil", "$mdTheming", "$mdKeyboard", "$mdGesture"];
     var SCOPE;
     var CLOSING_VELOCITY = 0.5;
     var PADDING = 80; // same as css
@@ -1355,7 +1356,8 @@ function MdKeyboardProvider($$interimElementProvider, keyboardLayouts, keyboardD
     return $mdKeyboard;
 
     /* @ngInject */
-    function keyboardDefaults($window, $animate, $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $rootElement, $mdGesture) {
+    function keyboardDefaults($window, $animate, $rootElement,
+                              $mdConstant, $mdUtil, $mdTheming, $mdKeyboard, $mdGesture) {
 
         return {
             onShow: onShow,
@@ -1586,11 +1588,11 @@ function useKeyboardDirective($mdKeyboard, $timeout, $animate, $rootScope) {
                             $scope.capsLocked = !$scope.capsLocked;
                             $scope.caps = false;
                             break;
-                        
+
                         case "Shift":
                             $scope.caps = !$scope.caps;
                             break;
-                        
+
                         case "Alt":
                         case "AltGr":
                         case "AltLk":
