@@ -213,6 +213,8 @@ function useKeyboardDirective($mdKeyboard, $timeout, $animate, $rootScope) {
                 _init();
             }
 
+            mdKeyboardController.$inject = ['$scope'];
+
             function _getCaretPosition() {
                 if ('selectionStart' in element) {
                     return element.selectionStart;
