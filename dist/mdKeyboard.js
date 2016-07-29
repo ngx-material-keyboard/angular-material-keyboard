@@ -1174,7 +1174,8 @@ angular
 function MdAutocompleteDecorator($provide) {
     // decorate md-autocomplete directive
     // with use-keyboard behavior
-    $provide.decorator('mdAutocompleteDirective', ["$q", "$delegate", "$timeout", "$compile", "$mdUtil", function ($q, $delegate, $timeout, $compile, $mdUtil) {
+    $provide.decorator('mdAutocompleteDirective', ["$q", "$log", "$delegate", "$timeout", "$compile", "$mdUtil", "$mdConstant", function ($q, $log, $delegate, $timeout, $compile,
+                                                            $mdUtil, $mdConstant) {
         var directive = $delegate[0];
         var compile = directive.compile;
 
@@ -1196,8 +1197,9 @@ function MdAutocompleteDecorator($provide) {
                             .attr('use-keyboard', attrs.useKeyboard);
                         var compiled = $compile(cloned)(scope);
                         input.replaceWith(compiled);
+                        var keydown = MdAutocompleteCtrl.keydown;
 
-                        MdAutocompleteCtrl.select = function (index) {
+                        function select (index) {
                             $mdUtil.nextTick(function () {
                                 getDisplayValue(MdAutocompleteCtrl.matches[index]).then(function (val) {
                                     var ngModel = compiled.controller('ngModel');
@@ -1226,7 +1228,42 @@ function MdAutocompleteDecorator($provide) {
 
                                 return locals;
                             }
-                        };
+                        }
+
+                        function keydownDecorated(event) {
+                            switch (event.keyCode) {
+
+                                case $mdConstant.KEY_CODE.ENTER:
+                                    if (MdAutocompleteCtrl.hidden
+                                        || MdAutocompleteCtrl.loading
+                                        || MdAutocompleteCtrl.index < 0
+                                        || MdAutocompleteCtrl.matches.length < 1) return;
+                                    if (hasSelection()) return;
+                                    event.stopPropagation();
+                                    event.preventDefault();
+                                    select(MdAutocompleteCtrl.index);
+                                    break;
+
+                                case $mdConstant.KEY_CODE.TAB:
+                                case $mdConstant.KEY_CODE.ESCAPE:
+                                    compiled.blur();
+                                    if (scope.searchText) {
+                                        keydown.call(MdAutocompleteCtrl, event);
+                                    }
+                                    break;
+
+                                default:
+                                    keydown.call(MdAutocompleteCtrl, event);
+                                    break;
+                            }
+
+                            function hasSelection() {
+                                return MdAutocompleteCtrl.scope.selectedItem ? true : false;
+                            }
+                        }
+
+                        MdAutocompleteCtrl.select = select;
+                        MdAutocompleteCtrl.keydown = keydownDecorated;
                     });
                 }
             };
