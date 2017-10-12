@@ -1,3 +1,7 @@
+# Deprecated
+Since Angular 2 I spend my spare time on the [ngx-material-keyboard](https://github.com/ngx-material-keyboard/core). Feel free to PR, I'll have a look at it.
+If you want to contribute more please message me :)
+
 # angular-material-keyboard
 Onscreen virtual keyboard for [Angular](https://angularjs.org/) using [Angular Material](https://material.angularjs.org/) and the [Angular Virtual Keyboard by the-darc](https://github.com/the-darc/angular-virtual-keyboard) based on [GreyWyvern VKI](http://www.greywyvern.com/code/javascript/keyboard).
 
